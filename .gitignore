@@ -1,4 +1,4 @@
-# --- Generated from ./.gitignores on Mon Dec 29 20:58:55 2025 ---
+# --- Generated from ./.gitignores on Fri Jan  2 14:44:46 2026 ---
 
 #############################################
 # A.gitignore
@@ -11,6 +11,7 @@ tmp*/
 remote*/
 VSLive*/
 vscode*/
+pyright*/
 cursor*/
 
 ################################################################
@@ -268,11 +269,11 @@ build.log
 #############################################
 *.tar
 *.tar.*
-*.jar
+# *.jar
 *.exe
 *.msi
 *.deb
-*.zip
+# *.zip
 *.tgz
 *.log
 *.log.*
@@ -723,7 +724,7 @@ __dummy.html
 *.rsc
 *.int
 *.lk
-*.zip
+# *.zip
 
 #############################################
 # Dart.gitignore
@@ -1407,7 +1408,7 @@ C++.gitignore
 *.class
 
 # Package Files #
-*.jar
+# *.jar
 *.war
 
 # gwt caches and compiled units #
@@ -1598,7 +1599,7 @@ gradle-app.setting
 /*.war
 
 # plugin release files
-/*.zip
+# *.zip
 /plugin.xml
 
 # older plugin install locations
@@ -1859,11 +1860,11 @@ jobs/**/*workspace
 .mtj.tmp/
 
 # Package Files #
-*.jar
+# *.jar
 *.war
 *.nar
 *.ear
-*.zip
+# *.zip
 *.tar.gz
 *.rar
 
@@ -2657,10 +2658,10 @@ Libs/
 .mtj.tmp/
 
 # Package Files #
-*.jar
+# *.jar
 *.war
 *.ear
-*.zip
+# *.zip
 *.tar.gz
 *.rar
 
@@ -2733,11 +2734,11 @@ application/logs/*
 .mtj.tmp/
 
 # Package Files #
-*.jar
+# *.jar
 *.war
 *.nar
 *.ear
-*.zip
+# *.zip
 *.tar.gz
 *.rar
 
@@ -2817,7 +2818,7 @@ auth.json
 #############################################
 pom.xml
 pom.xml.asc
-*.jar
+# *.jar
 *.class
 /lib/
 /classes/
@@ -2879,7 +2880,7 @@ luac.out
 
 # luarocks build files
 *.src.rock
-*.zip
+# *.zip
 *.tar.gz
 
 # Object files
@@ -3044,8 +3045,8 @@ junit*.properties
 #############################################
 # ModelSim.gitignore
 #############################################
-# ignore ModelSim generated files and directories (temp files and so on)
-[_@]*
+# # ignore ModelSim generated files and directories (temp files and so on)
+# [_@]*
 
 # ignore compilation output of ModelSim
 *.mti
@@ -3097,7 +3098,7 @@ vsim.dbg
 *.gz
 *.rar
 *.tar
-*.zip
+# *.zip
 
 ## Dymola-specific files
 buildlog.txt
@@ -3556,7 +3557,7 @@ inc/
 /Makefile.old
 /MANIFEST.bak
 /pm_to_blib
-/*.zip
+# *.zip
 
 # Carton/Carmel
 /local/
@@ -4324,7 +4325,7 @@ bin/tmp
 bin/target
 bin/*.ap_
 *.o
-*.jar
+# *.jar
 
 #############################################
 # Ruby.gitignore
@@ -6234,7 +6235,7 @@ Offline-Models
 Offline-SGBDs
 *.exe
 *.msi
-*.zip
+# *.zip
 *.7z
 
 # Exclude default and custom temporary directories
