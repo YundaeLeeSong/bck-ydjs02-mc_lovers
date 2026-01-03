@@ -72,5 +72,31 @@ tasks.named("clean") {
                 println("WARNING: Error cleaning 'bin': ${e.message}")
             }
         }
+
+        // 3. Clean 'minecraft_server' directory (Runtime data)
+        val serverDir = project.file("minecraft_server")
+        if (serverDir.exists()) {
+            println("Cleaning server directory: $serverDir")
+            try {
+                if (!serverDir.deleteRecursively()) {
+                    println("WARNING: Failed to fully delete 'minecraft_server'. Files might be locked.")
+                }
+            } catch (e: Exception) {
+                println("WARNING: Error cleaning 'minecraft_server': ${e.message}")
+            }
+        }
+
+        // 4. Clean 'velocity_proxy' directory (Runtime data)
+        val proxyDir = project.file("velocity_proxy")
+        if (proxyDir.exists()) {
+            println("Cleaning proxy directory: $proxyDir")
+            try {
+                if (!proxyDir.deleteRecursively()) {
+                    println("WARNING: Failed to fully delete 'velocity_proxy'. Files might be locked.")
+                }
+            } catch (e: Exception) {
+                println("WARNING: Error cleaning 'velocity_proxy': ${e.message}")
+            }
+        }
     }
 }

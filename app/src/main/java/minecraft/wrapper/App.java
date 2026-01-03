@@ -16,6 +16,17 @@ import java.io.IOException;
  * </ol>
  * </p>
  * <p>
+ * <b>Security & Compatibility:</b>
+ * Due to the use of a bundled <b>Vanilla</b> Minecraft server (which lacks modern proxy forwarding support),
+ * the wrapper currently configures the network in <b>Offline Mode</b>.
+ * <ul>
+ *   <li>Velocity {@code online-mode} is disabled.</li>
+ *   <li>Backend {@code online-mode} is disabled.</li>
+ *   <li>Velocity forwarding is set to {@code none}.</li>
+ * </ul>
+ * This ensures successful connections for both Java and Bedrock clients but disables official Mojang authentication.
+ * </p>
+ * <p>
  * <b>Lifecycle Management:</b>
  * The wrapper keeps running as long as the Vanilla Server is active. When the Vanilla Server
  * stops (e.g., via GUI or /stop command), the wrapper automatically shuts down the Velocity Proxy
@@ -53,6 +64,10 @@ public class App {
             // --- Phase 2: Configuration ---
             System.out.println("=== Wrapper: Configuration ===");
             
+            // Generate Security Token
+            String secret = SecretManager.generateSecret();
+            System.out.println("Wrapper: Generated Forwarding Secret: " + secret);
+
             // Configure Vanilla (Backend)
             File propertiesFile = new File(serverDir, "server.properties");
             ServerPropertiesManager serverConfig = new ServerPropertiesManager(propertiesFile);
@@ -64,10 +79,14 @@ public class App {
             serverConfig.setProperty("server-port", "25566");      // Private backend port
             serverConfig.setProperty("online-mode", "false");      // Delegate auth to Proxy
             serverConfig.save();
+            
+            // Configure Paper (Backend) - Velocity Forwarding
+            PaperConfigManager paperConfig = new PaperConfigManager(serverDir);
+            paperConfig.configure(secret);
 
             // Configure Proxy
             VelocityRunner velocityRunner = new VelocityRunner(proxyDir);
-            velocityRunner.configure();
+            velocityRunner.configure(secret);
 
             // --- Phase 3: Execution ---
             NetworkReporter.printReport();

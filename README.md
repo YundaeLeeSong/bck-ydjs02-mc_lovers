@@ -91,3 +91,36 @@ This project supports creating a native, standalone executable using `jpackage`.
 This usually means a previous instance of the server is still running in the background.
 *   **Fix:** The wrapper now includes a robust Shutdown Hook. Ensure you exit the wrapper using `Ctrl+C` or by closing the console window. Avoid using Task Manager to kill the wrapper unless necessary.
 *   **Windows:** If the issue persists, the wrapper will attempt to use `taskkill` to force-close the process tree on the next shutdown event.
+
+## Implementation Details (v2.0)
+
+This wrapper implements a **Dual-Process Architecture** to provide cross-platform compatibility (Java & Bedrock) using a Vanilla backend.
+
+### Architecture
+1.  **Frontend (Velocity Proxy)**
+    *   **Port 25565 (TCP):** Java Edition entry point.
+    *   **Port 19132 (UDP):** Bedrock Edition entry point (via Geyser/Floodgate plugins).
+    *   Runs as a background process managed by the wrapper.
+
+2.  **Backend (Vanilla Server)**
+    *   **Port 25566 (TCP):** Internal server port (protected).
+    *   Runs as the primary blocking process.
+
+### Offline / Compatibility Mode
+To support the bundled **Vanilla** `server.jar` (which lacks native proxy forwarding support like Paper/Spigot), the wrapper runs in a special compatibility mode:
+*   **Velocity Forwarding:** `none` (Disables modern forwarding handshake).
+*   **Authentication:** `Offline Mode` (Disabled on both Proxy and Server).
+*   **Chat Signing:** Enforced insecure to prevent 1.19+ validation errors.
+
+**Trade-offs:**
+*   **Pros:** Works out-of-the-box with the provided Vanilla jar. Supports Bedrock and Java simultaneously.
+*   **Cons:** Player IPs appear as `127.0.0.1` in server logs. Official Mojang authentication is disabled (insecure).
+
+### Offline Installation
+The wrapper is fully self-contained. It bundles:
+*   `server.jar`
+*   `velocity.jar`
+*   `Geyser-Velocity.jar`
+*   `floodgate-velocity.jar`
+
+These are extracted from the classpath to the working directory on the first run, ensuring no internet connection is required for installation.

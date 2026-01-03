@@ -16,6 +16,12 @@ import java.util.List;
  * <p>
  * The proxy runs as a separate process (Frontend) that forwards traffic to the
  * Vanilla Server (Backend).
+ * <br>
+ * <b>Compatibility Note:</b>
+ * To support Vanilla Minecraft backends (which lack native modern forwarding),
+ * this runner currently defaults to {@code player-info-forwarding-mode = "none"}
+ * and {@code online-mode = false}. This bypasses strict key validation but loses
+ * IP forwarding capabilities.
  * </p>
  */
 public class VelocityRunner {
@@ -38,21 +44,29 @@ public class VelocityRunner {
     }
 
     /**
-     * Generates the {@code velocity.toml} configuration file if it does not exist.
+     * Generates the {@code velocity.toml} configuration file and the {@code forwarding.secret} file.
      * <p>
-     * The generated configuration is optimized for this wrapper:
+     * The generated configuration is optimized for this wrapper's Vanilla backend:
      * <ul>
      *   <li>Binds to 0.0.0.0:25565 (Public Port).</li>
      *   <li>Forwards to 127.0.0.1:25566 (Internal Backend).</li>
-     *   <li>Enables {@code online-mode} (Security).</li>
-     *   <li>Sets forwarding mode to {@code modern} (Compatible with Paper).</li>
-     *   <li>Sets {@code ping-passthrough} to {@code ALL} (Fixes ViaVersion backend detection).</li>
+     *   <li>Sets {@code online-mode = false} to bypass key validation on offline backends.</li>
+     *   <li>Sets forwarding mode to {@code none} (Vanilla compatibility).</li>
      * </ul>
      * </p>
      *
-     * @throws IOException If writing the configuration file fails.
+     * @param secret The forwarding secret to write to {@code forwarding.secret} (unused in "none" mode but kept for future use).
+     * @throws IOException If writing the configuration files fails.
      */
-    public void configure() throws IOException {
+    public void configure(String secret) throws IOException {
+        // 1. Write Secret File
+        // We always overwrite this to ensure the Proxy and Backend are in sync with the Wrapper's state.
+        File secretFile = new File(workDir, "forwarding.secret");
+        try (FileWriter writer = new FileWriter(secretFile)) {
+            writer.write(secret);
+        }
+
+        // 2. Write Config File
         File configFile = new File(workDir, "velocity.toml");
         if (!configFile.exists()) {
             System.out.println("VelocityRunner: Generating velocity.toml...");
@@ -60,10 +74,6 @@ public class VelocityRunner {
                 writer.write(getVelocityConfig());
             }
         }
-        
-        // We also need a forwarding secret if we were using modern forwarding,
-        // but for legacy (Vanilla backend), it's less critical, though Velocity might complain.
-        // We'll let Velocity generate a secret if it needs one, or we can write a dummy one.
     }
 
     /**
@@ -130,10 +140,10 @@ config-version = "2.7"
 bind = "0.0.0.0:25565"
 motd = "&3A Velocity Proxy"
 show-max-players = 500
-online-mode = true
+online-mode = false
 prevent-client-proxy-connections = false
 # legacy is required for Vanilla servers that don't support modern forwarding
-player-info-forwarding-mode = "modern"
+player-info-forwarding-mode = "none"
 forwarding-secret-file = "forwarding.secret"
 announce-forge = false
 kick-existing-players = false
