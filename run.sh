@@ -67,6 +67,7 @@ build_and_run() {
     echo "chmod +x gradlew"
     echo "./gradlew :app:run"
     echo "./gradlew :app:createDist"
+    echo "pkill -f 'gradle' ... Kill any existing Gradle daemons"
     echo "--------------------------------------------------------"
     
     # Run interactive shell, mounting the current directory to /app

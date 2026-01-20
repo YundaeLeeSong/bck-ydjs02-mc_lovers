@@ -76,6 +76,7 @@ public class App {
             
             // ENFORCE Architecture Constraints
             System.out.println("Config: Enforcing Proxy Architecture settings...");
+            // serverConfig.setProperty("server-ip", "");      // Bind to all interfaces
             serverConfig.setProperty("server-port", "25566");      // Private backend port
             serverConfig.setProperty("online-mode", "false");      // Delegate auth to Proxy
             serverConfig.save();

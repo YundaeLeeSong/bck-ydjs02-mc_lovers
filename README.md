@@ -33,10 +33,10 @@ Requires Java 21+ and Gradle.
 ```bash
 
 # To run
-gradle clean && gradle build && gradle run
+./gradlew clean build run
 
 # To distribute
-gradle clean && gradle build && gradle createDist
+./gradlew clean build createDist
 
 ```
 
