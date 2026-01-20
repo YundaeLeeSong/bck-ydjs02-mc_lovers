@@ -36,7 +36,7 @@ Requires Java 21+ and Gradle.
 ./gradlew clean build run
 
 # To distribute
-./gradlew clean build createDist
+./gradlew clean build jpackage
 
 ```
 
@@ -124,3 +124,10 @@ The wrapper is fully self-contained. It bundles:
 *   `floodgate-velocity.jar`
 
 These are extracted from the classpath to the working directory on the first run, ensuring no internet connection is required for installation.
+
+## Recent Changes
+
+### JPackage Task Update
+*   **Renamed Task:** The Gradle task for creating the distribution has been renamed from `createDist` to `jpackage` to better reflect its purpose.
+*   **Cross-Platform Fix:** The `--win-console` flag is now conditionally applied only when running on Windows. This resolves build errors on Linux environments (e.g., Docker containers) where this flag is invalid.
+*   **Usage:** Run `./gradlew jpackage` to build the native distribution.
