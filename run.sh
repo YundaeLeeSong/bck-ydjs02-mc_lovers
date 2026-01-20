@@ -66,7 +66,7 @@ build_and_run() {
     echo "dos2unix gradlew"
     echo "chmod +x gradlew"
     echo "./gradlew :app:run"
-    echo "./gradlew :app:createDist"
+    echo "./gradlew :app:jpackage"
     echo "pkill -f 'gradle' ... Kill any existing Gradle daemons"
     echo "--------------------------------------------------------"
     

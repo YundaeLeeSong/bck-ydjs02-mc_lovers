@@ -3,7 +3,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 // ============================================================================ 
 // JPackage Distribution Task
 // ============================================================================ 
-// This script configures the 'createDist' task, which creates a native
+// This script configures the 'jpackage' task, which creates a native
 // self-contained executable for the application.
 //
 // Workflow:
@@ -13,7 +13,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 //    enabling the wrapper to spawn child Java processes (the Minecraft server).
 // ============================================================================ 
 
-val createDist by tasks.registering(Exec::class) {
+val jpackage by tasks.registering(Exec::class) {
     group = "distribution"
     description = "Bundles the app using jpackage (via installDist) and fixes the missing java.exe"
     
@@ -50,8 +50,8 @@ val createDist by tasks.registering(Exec::class) {
         
         // Execute jpackage
         // --type app-image: Creates a directory structure (not a single installer file)
-        // --win-console: Keeps the console window open to allow Ctrl+C signal handling
-        commandLine(
+        // --win-console: Keeps the console window open to allow Ctrl+C signal handling (Windows only)
+        val args = mutableListOf(
             jpackagePath,
             "--type", "app-image",
             "--input", inputDir,
@@ -59,9 +59,14 @@ val createDist by tasks.registering(Exec::class) {
             "--name", appName,
             "--main-jar", "app.jar", // The Gradle 'application' plugin always names the main jar 'app.jar'
             "--main-class", "minecraft.wrapper.App",
-            "--win-console",
             "--java-options", "-Xmx64m" // Low memory overhead for the wrapper itself
         )
+
+        if (isWindows) {
+            args.add("--win-console")
+        }
+
+        commandLine(args)
     }
 
     // --- Post-Processing Fix ---
@@ -88,7 +93,8 @@ val createDist by tasks.registering(Exec::class) {
         println("\n========================================================")
         println(" Distribution Created Successfully!")
         println(" Location: ${outputDir.resolve(appName)}")
-        println(" Executable: ${outputDir.resolve("$appName/$appName.exe")}")
+        val exeExtension = if (isWindows) ".exe" else ""
+        println(" Executable: ${outputDir.resolve("$appName/$appName$exeExtension")}")
         println("========================================================")
     }
 }
