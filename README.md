@@ -131,3 +131,12 @@ These are extracted from the classpath to the working directory on the first run
 *   **Renamed Task:** The Gradle task for creating the distribution has been renamed from `createDist` to `jpackage` to better reflect its purpose.
 *   **Cross-Platform Fix:** The `--win-console` flag is now conditionally applied only when running on Windows. This resolves build errors on Linux environments (e.g., Docker containers) where this flag is invalid.
 *   **Usage:** Run `./gradlew jpackage` to build the native distribution.
+
+### Build System & CI Refactoring (v2.1)
+*   **Unified Build Logic:** Integrated `jpackage` configuration directly into `app/build.gradle.kts`, removing reliance on external scripts and the `shadowJar` plugin. The build now uses the standard `installDist` output to prevent resource corruption of bundled jars.
+*   **Runtime Patching:** The `jpackage` task now automatically patches the generated runtime image by copying the full `java` binary. This fixes issues where child processes (like the Minecraft Server) failed to spawn because the default stripped runtime lacked the necessary executable.
+*   **CI/CD Pipeline:** Added a comprehensive GitHub Actions workflow (`release.yml`) that automates releases for:
+    *   **Windows** (`windows-latest`)
+    *   **Ubuntu** (`ubuntu-latest`)
+    *   **Oracle Linux 9** (Containerized build ensuring Enterprise Linux compatibility).
+*   **Oracle Linux Fix:** Addressed specific JMODs requirements for `jlink` on EL9 systems by ensuring `java-21-openjdk-jmods` is installed during the build process to fix `Module java.rmi not found` errors.

@@ -1,15 +1,12 @@
 /*
  * Minecraft Wrapper Build Configuration
  *
- * This project uses a standard Gradle Application layout with Shadow JAR for bundling.
+ * This project uses a standard Gradle Application layout.
  * It produces a native executable using 'jpackage' directly configured here.
  */
 
 plugins {
     application
-    // [Dependency Bundling] Shadow Plugin:
-    // Creates a single "fat" or "uber" JAR containing the application code AND all dependencies.
-    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -37,19 +34,11 @@ application {
 
 // --- TASK CONFIGURATIONS ---
 
-// 1. Configure Shadow JAR (The "Fat" Jar)
-tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    archiveFileName.set("app-all.jar")
-    mergeServiceFiles()
-    manifest {
-        attributes("Main-Class" to "minecraft.wrapper.App")
-    }
-}
-
-// 2. Custom JPackage Task (Distribution)
+// 1. Custom JPackage Task (Distribution)
 // Creates a standalone, portable application image for the CURRENT OS.
 tasks.register<Exec>("jpackage") {
-    dependsOn("shadowJar")
+    // Use installDist to gather all dependencies and the main jar into a single directory
+    dependsOn("installDist")
 
     val jdkHome = javaToolchains.launcherFor {
         languageVersion.set(JavaLanguageVersion.of(21))
@@ -60,9 +49,11 @@ tasks.register<Exec>("jpackage") {
     val jpackageExec = if (isWindows) "jpackage.exe" else "jpackage"
     val jpackageTool = jdkHome.dir("bin").file(jpackageExec).asFile.absolutePath
 
-    val inputDir = layout.buildDirectory.dir("libs").get().asFile.absolutePath
+    // 'installDist' outputs to build/install/<projectName>/lib
+    // We point jpackage to this 'lib' folder which contains all jars.
+    val inputDir = layout.buildDirectory.dir("install/app/lib").get().asFile.absolutePath
     val outputDir = layout.buildDirectory.dir("dist").get().asFile.absolutePath
-    val jarName = "app-all.jar"
+    val jarName = "app.jar" // Standard jar name from application plugin
     val appName = "mc-lovers"
 
     // [Execution] Run the jpackage command
@@ -88,6 +79,7 @@ tasks.register<Exec>("jpackage") {
             distFolder.deleteRecursively()
         }
         println("Using jpackage from: $jpackageTool")
+        println("Input Directory: $inputDir")
     }
 
     // [Post-Processing Fix]
