@@ -5,7 +5,39 @@ on:
       - 'v*'
 
 jobs:
-  build-linux:
+  # ------------------------------------------------------------------
+  # 1. Build for Windows
+  # ------------------------------------------------------------------
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with JPackage
+        run: ./gradlew jpackage
+
+      - name: Archive Bundle (Zip)
+        run: |
+          cd app/build/dist
+          Compress-Archive -Path mc-lovers -DestinationPath mc-lovers-windows.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-windows
+          path: app/build/dist/mc-lovers-windows.zip
+
+  # ------------------------------------------------------------------
+  # 2. Build for Ubuntu (Generic Linux)
+  # ------------------------------------------------------------------
+  build-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -16,34 +48,88 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          
+      
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew jar --no-daemon
+      - name: Build with JPackage
+        run: ./gradlew jpackage
 
-      - name: Create Self-Contained Bundle (jpackage)
+      - name: Archive Bundle (Tar)
         run: |
-          # Create a directory for input jars
-          mkdir -p input-libs
-          cp build/libs/*.jar input-libs/
-          
-          # Run jpackage to create a runtime + executable
-          # --type app-image creates a folder you can just zip and run
-          jpackage \
-            --type app-image \
-            --dest dist \
-            --name mc-lovers \
-            --input input-libs \
-            --main-jar $(ls input-libs | head -n 1) \
-            --main-class your.main.ClassName \
-            --verbose
+          cd app/build/dist
+          tar -czvf mc-lovers-ubuntu.tar.gz mc-lovers
 
-      - name: Archive Bundle
-        run: tar -czvf mc-lovers-linux.tar.gz -C dist/mc-lovers .
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-ubuntu
+          path: app/build/dist/mc-lovers-ubuntu.tar.gz
 
-      - name: Upload Release
+  # ------------------------------------------------------------------
+  # 3. Build for Oracle Linux (Containerized)
+  # ------------------------------------------------------------------
+  build-oracle-linux:
+    runs-on: ubuntu-latest
+    container: oraclelinux:9
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        # Install Java 21, tar (for archiving), and basic build utils
+        run: |
+          dnf update -y
+          dnf install -y java-21-openjdk-devel tar gzip binutils findutils
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with JPackage
+        run: ./gradlew jpackage
+
+      - name: Archive Bundle (Tar)
+        run: |
+          cd app/build/dist
+          tar -czvf mc-lovers-oracle-linux.tar.gz mc-lovers
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-oracle-linux
+          path: app/build/dist/mc-lovers-oracle-linux.tar.gz
+
+  # ------------------------------------------------------------------
+  # 4. Create GitHub Release
+  # ------------------------------------------------------------------
+  release:
+    needs: [build-windows, build-ubuntu, build-oracle-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-windows
+          path: artifacts/windows
+
+      - name: Download Ubuntu Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-ubuntu
+          path: artifacts/ubuntu
+
+      - name: Download Oracle Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-oracle-linux
+          path: artifacts/oracle
+
+      - name: Publish Release
         uses: softprops/action-gh-release@v1
         with:
-          files: mc-lovers-linux.tar.gz
+          files: |
+            artifacts/windows/mc-lovers-windows.zip
+            artifacts/ubuntu/mc-lovers-ubuntu.tar.gz
+            artifacts/oracle/mc-lovers-oracle-linux.tar.gz
