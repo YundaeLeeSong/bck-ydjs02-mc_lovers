@@ -90,13 +90,32 @@ tasks.register<Exec>("jpackage") {
     doLast {
         val javaName = if (isWindows) "java.exe" else "java"
         val sourceJava = jdkHome.dir("bin").file(javaName).asFile
-        val destJava = file(outputDir).resolve("$appName/runtime/bin/$javaName")
+        
+        // Determine correct runtime location based on OS layout
+        // Windows: <app>/runtime
+        // Linux/Mac: <app>/lib/runtime
+        val runtimePath = if (isWindows) "runtime" else "lib/runtime"
+        val destJava = file(outputDir).resolve("$appName/$runtimePath/bin/$javaName")
 
         println(">>> Patching Runtime for Child Process Support")
         
-        if (sourceJava.exists() && destJava.parentFile.exists()) {
+        if (sourceJava.exists()) {
+            // Ensure destination directory exists (especially 'bin' if it was stripped)
+            destJava.parentFile.mkdirs()
+            
             sourceJava.copyTo(destJava, overwrite = true)
             println("Success: Copied $javaName to ${destJava.absolutePath}")
+            
+            // Set executable permission on Linux/Mac
+            if (!isWindows) {
+                try {
+                    val chmod = ProcessBuilder("chmod", "+x", destJava.absolutePath).start()
+                    chmod.waitFor()
+                    println("Success: Set executable permission on $javaName")
+                } catch (e: Exception) {
+                    println("WARNING: Failed to set executable permission: ${e.message}")
+                }
+            }
         } else {
             println("WARNING: Failed to patch runtime. Child processes might fail.")
             println("Source: $sourceJava")
