@@ -150,3 +150,22 @@ We have transitioned from the standard Vanilla Mojang server to **Paper** for th
 2.  **Velocity Support**: Paper has native support for **Velocity**'s modern forwarding. This allows the proxy to securely pass player information (IP, UUID, skin) to the backend server without relying on the insecure 'Offline Mode' hack required for Vanilla.
 3.  **Fixes & Stability**: Paper patches many known exploits and bugs that exist in the Vanilla server software.
 4.  **Configurability**: Paper offers extensive configuration options ('paper-global.yml') to fine-tune server behavior to your specific needs.
+
+## Known Issues & Cloud Optimizations (v2.2)
+
+We have implemented specific fixes to ensure stability on Cloud environments (like Oracle Cloud Infrastructure - OCI) and resource-constrained servers.
+
+### 1. Bedrock Connection Timeout (OCI Fix)
+*   **Issue:** Bedrock players would get disconnected with a 'Timed Out' error exactly 60 seconds after joining.
+*   **Cause:** Cloud networks often have a lower **MTU** (Maximum Transmission Unit) than the standard 1500 bytes. Large UDP packets from Geyser (like initial chunk data) were being fragmented or dropped by the cloud provider's network layer.
+*   **Fix:** The wrapper now automatically enforces a safe **MTU of 1350** in the Geyser configuration (`plugins/Geyser-Velocity/config.yml`). This ensures packets are small enough to pass through restrictive cloud networks without fragmentation.
+
+### 2. 'Server Not Responding' Crash
+*   **Issue:** The server would crash during startup or heavy lag spikes with the error: *"The server has not responded for 60 seconds! Creating thread dump"*.
+*   **Cause:** The Vanilla/Paper **Watchdog** detects if the main thread is frozen. On slow machines (e.g., free tier cloud instances), generating the initial world spawn can take minutes, triggering a false-positive crash.
+*   **Fix:** We have disabled the internal watchdog by setting `max-tick-time=-1` in `server.properties`. This allows the server indefinitely to load chunks or recover from lag spikes without killing itself.
+
+### 3. 'Velocity not routing' Error
+*   **Issue:** Players could not connect to the backend server, receiving a *"Velocity not routing to a valid backend server definition"* error.
+*   **Cause:** A configuration mismatch. Paper servers require **Modern Forwarding** (with a secure secret) to be enabled on the proxy to accept connections securely.
+*   **Fix:** The wrapper now correctly configures `velocity.toml` to use `player-info-forwarding-mode = "modern"` and shares a generated secret with the Paper backend.
