@@ -56,8 +56,13 @@ public class ServerRunner {
         // 2. Build Command Arguments
         List<String> commands = new ArrayList<>();
         commands.add(javaPath);
-        commands.add("-Xmx1024M"); // Limit Heap to 1GB
-        commands.add("-Xms1024M"); // Start Heap at 1GB
+        // commands.add("-Xmx1024M"); // Limit Heap to 1GB
+        // commands.add("-Xms1024M"); // Start Heap at 1GB
+
+        
+        commands.add("-Xms256M");  // Start Heap at 256MB (for low memory systems)
+        commands.add("-Xmx512M");  // Limit Heap to 512MB (for low memory systems)
+
         commands.add("-jar");
         commands.add(jarName);
         if (!enableGui) {

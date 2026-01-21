@@ -102,8 +102,8 @@ public class App {
             
             int exitCode = 0;
             try {
-                // exitCode = serverRunner.start(enableGui);
-                exitCode = serverRunner.start(false); // Force nogui for testing
+                // exitCode = serverRunner.start(enableGui);        // Normal mode
+                exitCode = serverRunner.start(false);   // Force nogui for testing
                 System.out.println("Wrapper: Backend Server exited with code: " + exitCode);
             } catch (Exception e) {
                 System.err.println("Wrapper: Backend Server crashed: " + e.getMessage());
