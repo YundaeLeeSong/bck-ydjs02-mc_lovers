@@ -34,7 +34,6 @@ public class NetworkReporter {
              * It represents the "Loopback Interface".
              */
             InetAddress loopback = InetAddress.getByName("localhost");
-
             /*
              * METHOD 2: InetAddress.getLocalHost()
              * ------------------------------------
@@ -51,7 +50,9 @@ public class NetworkReporter {
             System.out.println("Localhost Address: " + localhost.getAddress());
             System.out.println("Localhost Address Length: " + localhost.getAddress().length);
             System.out.println("Localhost Address String: " + localhost.getAddress().toString());
+            System.out.println("Host: " + localhost.getHostName() + " (" + localhost.getHostAddress() + ")");
         } catch (UnknownHostException e) {
+            System.out.println("Host: Unknown");
             System.out.println("Error getting IP address: " + e.getMessage());
         }
         System.out.println("-------------------------------------------------------------------------------");
@@ -60,7 +61,7 @@ public class NetworkReporter {
         System.out.println("| Primary Port        | 25565 (TCP)              | 19132 (UDP)                      |");
         System.out.println("| Initial Target      | Velocity Proxy           | Geyser (via Velocity)            |");
         System.out.println("| Authentication      | Mojang (Native)          | Floodgate (No Java Account Req)  |");
-        System.out.println("| Backend Server      | Vanilla (Internal)       | Vanilla (Internal)               |");
+        System.out.println("| Backend Server      | Paper (Internal)         | Paper (Internal)                 |");
         System.out.println("-------------------------------------------------------------------------------");
         System.out.println("Backend is listening on 127.0.0.1:25566 (Protected)");
         System.out.println("Proxy is listening on 0.0.0.0:25565 (Public)");
