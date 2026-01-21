@@ -66,17 +66,27 @@ public class ServerPropertiesManager {
         // server.properties, you must set enforce-secure-profile=false, otherwise, Bedrock clients will be kicked.
         // We FORCE this to false by default for this wrapper unless explicitly overridden to true (which is not recommended).
         String enforceSecureProfile = System.getenv().getOrDefault("MC_ENFORCE_SECURE_PROFILE", "false");
+        String pauseWhenEmptySeconds = System.getenv().getOrDefault("MC_PAUSE_WHEN_EMPTY_SECONDS", "0");
+        String viewDistance = System.getenv().getOrDefault("MC_VIEW_DISTANCE", "6");
+        String simulationDistance = System.getenv().getOrDefault("MC_SIMULATION_DISTANCE", "4");
 
         System.out.println("Config: Applying Environment Variables:");
         System.out.println("  - motd: " + motd);
         System.out.println("  - max-players: " + maxPlayers);
         System.out.println("  - online-mode: " + onlineMode + "\t ('false' for delegate auth to ProxiedBedrock)");
         System.out.println("  - enforce-secure-profile: " + enforceSecureProfile + "\t ('false' for Bedrock clients)");
+        System.out.println("  - pause-when-empty-seconds: " + pauseWhenEmptySeconds);
+        System.out.println("  - view-distance: " + viewDistance);
+        System.out.println("  - simulation-distance: " + simulationDistance);
 
         setProperty("motd", motd);
         setProperty("max-players", maxPlayers);
         setProperty("online-mode", onlineMode);
         setProperty("enforce-secure-profile", "false"); // Always enforce false for proxy compatibility
+        setProperty("pause-when-empty-seconds", pauseWhenEmptySeconds);
+        setProperty("view-distance", viewDistance);
+        setProperty("simulation-distance", simulationDistance);
+
     }
 
     /**

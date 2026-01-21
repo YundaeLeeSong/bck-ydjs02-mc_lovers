@@ -55,7 +55,7 @@ public class PaperConfigManager {
         return "proxies:\n" +
                "  velocity:\n" +
                "    enabled: true\n" +
-               "    online-mode: true\n" +
+               "    online-mode: false\n" +
                "    secret: " + secret + "\n";
     }
 
