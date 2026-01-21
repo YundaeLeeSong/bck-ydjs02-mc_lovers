@@ -88,7 +88,8 @@ public class VelocityRunner {
     public void start() throws IOException {
         List<String> cmd = new ArrayList<>();
         cmd.add(javaBin.getAbsolutePath());
-        cmd.add("-Xmx512M"); // Velocity is lightweight
+        cmd.add("-Xms64M");  // Minimum heap
+        cmd.add("-Xmx128M"); // Velocity is lightweight
         cmd.add("-jar");
         cmd.add("velocity.jar");
 
