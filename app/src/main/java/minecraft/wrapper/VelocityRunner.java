@@ -143,8 +143,8 @@ motd = "&3A Velocity Proxy"
 show-max-players = 500
 online-mode = false
 prevent-client-proxy-connections = false
-# legacy is required for Vanilla servers that don't support modern forwarding
-player-info-forwarding-mode = "none"
+# Modern forwarding is required for Paper servers with velocity.enabled = true
+player-info-forwarding-mode = "modern"
 forwarding-secret-file = "forwarding.secret"
 announce-forge = false
 kick-existing-players = false
