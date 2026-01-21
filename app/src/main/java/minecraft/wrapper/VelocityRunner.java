@@ -44,19 +44,14 @@ public class VelocityRunner {
     }
 
     /**
-     * Generates the {@code velocity.toml} configuration file and the {@code forwarding.secret} file.
+     * Generates the {@code forwarding.secret} file.
      * <p>
-     * The generated configuration is optimized for this wrapper's Vanilla backend:
-     * <ul>
-     *   <li>Binds to 0.0.0.0:25565 (Public Port).</li>
-     *   <li>Forwards to 127.0.0.1:25566 (Internal Backend).</li>
-     *   <li>Sets {@code online-mode = false} to bypass key validation on offline backends.</li>
-     *   <li>Sets forwarding mode to {@code none} (Vanilla compatibility).</li>
-     * </ul>
+     * The main {@code velocity.toml} configuration is now managed by {@link VelocityConfigManager}
+     * to ensure cloud optimizations are applied.
      * </p>
      *
-     * @param secret The forwarding secret to write to {@code forwarding.secret} (unused in "none" mode but kept for future use).
-     * @throws IOException If writing the configuration files fails.
+     * @param secret The forwarding secret to write to {@code forwarding.secret}.
+     * @throws IOException If writing the secret file fails.
      */
     public void configure(String secret) throws IOException {
         // 1. Write Secret File
@@ -64,15 +59,6 @@ public class VelocityRunner {
         File secretFile = new File(workDir, "forwarding.secret");
         try (FileWriter writer = new FileWriter(secretFile)) {
             writer.write(secret);
-        }
-
-        // 2. Write Config File
-        File configFile = new File(workDir, "velocity.toml");
-        if (!configFile.exists()) {
-            System.out.println("VelocityRunner: Generating velocity.toml...");
-            try (FileWriter writer = new FileWriter(configFile)) {
-                writer.write(getVelocityConfig());
-            }
         }
     }
 
@@ -133,30 +119,5 @@ public class VelocityRunner {
             return this.process.waitFor();
         }
         return 0;
-    }
-
-    private String getVelocityConfig() {
-        return """
-config-version = "2.7"
-bind = "0.0.0.0:25565"
-motd = "&3A Velocity Proxy"
-show-max-players = 500
-online-mode = false
-prevent-client-proxy-connections = false
-# Modern forwarding is required for Paper servers with velocity.enabled = true
-player-info-forwarding-mode = "modern"
-forwarding-secret-file = "forwarding.secret"
-announce-forge = false
-kick-existing-players = false
-force-key-authentication = false
-ping-passthrough = "ALL"
-read-timeout = 120000
-
-[servers]
-lobby = "127.0.0.1:25566"
-try = ["lobby"]
-
-[forced-hosts]
-""";
     }
 }

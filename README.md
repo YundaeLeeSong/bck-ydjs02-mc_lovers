@@ -158,7 +158,7 @@ We have implemented specific fixes to ensure stability on Cloud environments (li
 ### 1. Bedrock Connection Timeout (OCI Fix)
 *   **Issue:** Bedrock players would get disconnected with a 'Timed Out' error exactly 60 seconds after joining.
 *   **Cause:** Cloud networks often have a lower **MTU** (Maximum Transmission Unit) than the standard 1500 bytes. Large UDP packets from Geyser (like initial chunk data) were being fragmented or dropped by the cloud provider's network layer.
-*   **Fix:** The wrapper now automatically enforces a safe **MTU of 1350** in the Geyser configuration (`plugins/Geyser-Velocity/config.yml`). This ensures packets are small enough to pass through restrictive cloud networks without fragmentation.
+*   **Fix:** The wrapper now automatically enforces a safe **MTU of 1200** in the Geyser configuration (`plugins/Geyser-Velocity/config.yml`). This ensures packets are small enough to pass through restrictive cloud networks without fragmentation.
 
 ### 2. 'Server Not Responding' Crash
 *   **Issue:** The server would crash during startup or heavy lag spikes with the error: *"The server has not responded for 60 seconds! Creating thread dump"*.
