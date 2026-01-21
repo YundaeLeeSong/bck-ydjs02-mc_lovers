@@ -67,7 +67,39 @@ jobs:
           path: app/build/dist/mc-lovers-ubuntu.tar.gz
 
   # ------------------------------------------------------------------
-  # 3. Build for Oracle Linux (Containerized)
+  # 3. Build for MacOS
+  # ------------------------------------------------------------------
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with JPackage
+        run: ./gradlew jpackage
+
+      - name: Archive Bundle (Zip)
+        run: |
+          cd app/build/dist
+          zip -r mc-lovers-macos.zip mc-lovers.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-macos
+          path: app/build/dist/mc-lovers-macos.zip
+
+  # ------------------------------------------------------------------
+  # 4. Build for Oracle Linux (Containerized)
   # ------------------------------------------------------------------
   build-oracle-linux:
     runs-on: ubuntu-latest
@@ -100,10 +132,10 @@ jobs:
           path: app/build/dist/mc-lovers-oracle-linux.tar.gz
 
   # ------------------------------------------------------------------
-  # 4. Create GitHub Release
+  # 5. Create GitHub Release
   # ------------------------------------------------------------------
   release:
-    needs: [build-windows, build-ubuntu, build-oracle-linux]
+    needs: [build-windows, build-ubuntu, build-macos, build-oracle-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -120,6 +152,12 @@ jobs:
           name: mc-lovers-ubuntu
           path: artifacts/ubuntu
 
+      - name: Download MacOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-macos
+          path: artifacts/macos
+
       - name: Download Oracle Linux Artifact
         uses: actions/download-artifact@v4
         with:
@@ -132,4 +170,5 @@ jobs:
           files: |
             artifacts/windows/mc-lovers-windows.zip
             artifacts/ubuntu/mc-lovers-ubuntu.tar.gz
+            artifacts/macos/mc-lovers-macos.zip
             artifacts/oracle/mc-lovers-oracle-linux.tar.gz

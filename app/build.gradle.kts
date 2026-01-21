@@ -45,7 +45,9 @@ tasks.register<Exec>("jpackage") {
     }.get().metadata.installationPath
 
     // [Cross-Platform] Determine executable name
-    val isWindows = System.getProperty("os.name").lowercase().contains("win")
+    val osName = System.getProperty("os.name").lowercase()
+    val isWindows = osName.contains("win")
+    val isMac = osName.contains("mac")
     val jpackageExec = if (isWindows) "jpackage.exe" else "jpackage"
     val jpackageTool = jdkHome.dir("bin").file(jpackageExec).asFile.absolutePath
 
@@ -93,9 +95,13 @@ tasks.register<Exec>("jpackage") {
         
         // Determine correct runtime location based on OS layout
         // Windows: <app>/runtime
-        // Linux/Mac: <app>/lib/runtime
-        val runtimePath = if (isWindows) "runtime" else "lib/runtime"
-        val destJava = file(outputDir).resolve("$appName/$runtimePath/bin/$javaName")
+        // Mac: <app>.app/Contents/runtime
+        // Linux: <app>/lib/runtime
+        val destJava = when {
+            isWindows -> file(outputDir).resolve("$appName/runtime/bin/$javaName")
+            isMac -> file(outputDir).resolve("$appName.app/Contents/runtime/bin/$javaName")
+            else -> file(outputDir).resolve("$appName/lib/runtime/bin/$javaName")
+        }
 
         println(">>> Patching Runtime for Child Process Support")
         
