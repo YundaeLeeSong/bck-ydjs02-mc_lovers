@@ -72,16 +72,20 @@ public class VelocityRunner {
      * @throws IOException If the process cannot be started.
      */
     public void start() throws IOException {
-        List<String> cmd = new ArrayList<>();
-        cmd.add(javaBin.getAbsolutePath());
-        cmd.add("-Xms64M");  // Minimum heap
-        cmd.add("-Xmx128M"); // Velocity is lightweight
-        cmd.add("-jar");
-        cmd.add("velocity.jar");
+        List<String> commands = new ArrayList<>();
+        commands.add(javaBin.getAbsolutePath());
+        
+        commands.add("-Xms256M");  // Start Heap at 256MB (for low memory systems)
+        commands.add("-Xmx512M");  // Limit Heap to 512MB (for low memory systems)
+
+        // cmd.add("-Xms64M");  // Minimum heap
+        // cmd.add("-Xmx128M"); // Velocity is lightweight
+        commands.add("-jar");
+        commands.add("velocity.jar");
 
         System.out.println("VelocityRunner: Starting Proxy on port 25565...");
         
-        ProcessBuilder pb = new ProcessBuilder(cmd);
+        ProcessBuilder pb = new ProcessBuilder(commands);
         pb.directory(workDir);
         pb.redirectOutput(Redirect.INHERIT);
         pb.redirectError(Redirect.INHERIT);
