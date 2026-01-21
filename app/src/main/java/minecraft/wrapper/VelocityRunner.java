@@ -150,6 +150,7 @@ announce-forge = false
 kick-existing-players = false
 force-key-authentication = false
 ping-passthrough = "ALL"
+read-timeout = 120000
 
 [servers]
 lobby = "127.0.0.1:25566"
