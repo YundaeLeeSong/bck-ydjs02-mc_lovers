@@ -89,7 +89,11 @@ public class App {
             GeyserConfigManager geyserConfig = new GeyserConfigManager(proxyDir);
             geyserConfig.configure();
 
-            // Configure Proxy
+            // Configure Velocity (Proxy Main)
+            VelocityConfigManager velocityConfig = new VelocityConfigManager(proxyDir);
+            velocityConfig.configure();
+
+            // Configure Proxy Runner
             VelocityRunner velocityRunner = new VelocityRunner(proxyDir);
             velocityRunner.configure(secret);
 

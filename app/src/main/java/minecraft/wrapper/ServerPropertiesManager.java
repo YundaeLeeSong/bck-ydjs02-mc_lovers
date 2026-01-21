@@ -86,7 +86,7 @@ public class ServerPropertiesManager {
         setProperty("pause-when-empty-seconds", pauseWhenEmptySeconds);
         setProperty("view-distance", viewDistance);
         setProperty("simulation-distance", simulationDistance);
-        setProperty("max-tick-time", "-1"); // Disable Watchdog to prevent 'not responded' crashes on slow machines
+        setProperty("max-tick-time", "60000"); // Disable Watchdog to prevent 'not responded' crashes on slow machines
 
     }
 

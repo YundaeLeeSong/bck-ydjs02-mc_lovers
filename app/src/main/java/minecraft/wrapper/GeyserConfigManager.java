@@ -60,7 +60,7 @@ advanced:
   floodgate-key-file: \"floodgate-key.pem\"
   bedrock:
     # OCI/Cloud Fix: Lower MTU to prevent packet loss and timeouts
-    mtu: 1350
+    mtu: 1200
 
 java:
   auth-type: floodgate
@@ -97,9 +97,9 @@ unusable-space-block: \"minecraft:barrier\"
         String newContent = content;
         
         // Fix MTU for OCI/Cloud
-        // Matches "mtu: [number]" and replaces with "mtu: 1350"
+        // Matches "mtu: [number]" and replaces with "mtu: 1200"
         if (newContent.contains("mtu:")) {
-             newContent = newContent.replaceAll("mtu: \\d+", "mtu: 1350");
+             newContent = newContent.replaceAll("mtu: \\d+", "mtu: 1200");
         } else {
              // Fallback if key missing (unlikely in valid config), append to bedrock section is hard without yaml parser
              // We'll just append it to the end if not found, though Geyser might not read it if structure is strict.
@@ -109,7 +109,7 @@ unusable-space-block: \"minecraft:barrier\"
         
         if (!newContent.equals(content)) {
             Files.writeString(file.toPath(), newContent, StandardOpenOption.TRUNCATE_EXISTING);
-            System.out.println("Config: Updated Geyser config.yml (MTU set to 1350).");
+            System.out.println("Config: Updated Geyser config.yml (MTU set to 1200).");
         }
     }
 }
