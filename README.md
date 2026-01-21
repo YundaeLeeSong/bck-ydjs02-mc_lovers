@@ -141,3 +141,12 @@ These are extracted from the classpath to the working directory on the first run
     *   **Oracle Linux 9** (Containerized build ensuring Enterprise Linux compatibility).
 *   **Oracle Linux Fix:** Addressed specific JMODs requirements for `jlink` on EL9 systems by ensuring `java-21-openjdk-jmods` is installed during the build process to fix `Module java.rmi not found` errors.
 *   **Linux Runtime Layout Fix:** Corrected the post-processing logic to respect the different runtime directory structures between Windows (`runtime/`) and Linux (`lib/runtime/`). Additionally ensures the patched `java` binary has executable permissions (`chmod +x`) on non-Windows systems, resolving `No such file or directory` errors during startup.
+
+## Why Paper?
+
+We have transitioned from the standard Vanilla Mojang server to **Paper** for the backend. Here is why:
+
+1.  **Performance**: Paper includes significant optimizations to the Minecraft game loop, chunk loading, and redstone mechanics, resulting in smoother gameplay and lower resource usage compared to Vanilla.
+2.  **Velocity Support**: Paper has native support for **Velocity**'s modern forwarding. This allows the proxy to securely pass player information (IP, UUID, skin) to the backend server without relying on the insecure 'Offline Mode' hack required for Vanilla.
+3.  **Fixes & Stability**: Paper patches many known exploits and bugs that exist in the Vanilla server software.
+4.  **Configurability**: Paper offers extensive configuration options ('paper-global.yml') to fine-tune server behavior to your specific needs.
