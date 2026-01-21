@@ -140,3 +140,4 @@ These are extracted from the classpath to the working directory on the first run
     *   **Ubuntu** (`ubuntu-latest`)
     *   **Oracle Linux 9** (Containerized build ensuring Enterprise Linux compatibility).
 *   **Oracle Linux Fix:** Addressed specific JMODs requirements for `jlink` on EL9 systems by ensuring `java-21-openjdk-jmods` is installed during the build process to fix `Module java.rmi not found` errors.
+*   **Linux Runtime Layout Fix:** Corrected the post-processing logic to respect the different runtime directory structures between Windows (`runtime/`) and Linux (`lib/runtime/`). Additionally ensures the patched `java` binary has executable permissions (`chmod +x`) on non-Windows systems, resolving `No such file or directory` errors during startup.
