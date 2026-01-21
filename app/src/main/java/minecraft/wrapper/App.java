@@ -85,6 +85,10 @@ public class App {
             PaperConfigManager paperConfig = new PaperConfigManager(serverDir);
             paperConfig.configure(secret);
 
+            // Configure Geyser (Velocity Plugin)
+            GeyserConfigManager geyserConfig = new GeyserConfigManager(proxyDir);
+            geyserConfig.configure();
+
             // Configure Proxy
             VelocityRunner velocityRunner = new VelocityRunner(proxyDir);
             velocityRunner.configure(secret);
