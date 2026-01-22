@@ -75,8 +75,8 @@ public class VelocityRunner {
         List<String> commands = new ArrayList<>();
         commands.add(javaBin.getAbsolutePath());
         
-        commands.add("-Xms256M");  // Start Heap at 256MB (for low memory systems)
-        commands.add("-Xmx512M");  // Limit Heap to 512MB (for low memory systems)
+        commands.add("-Xms512M");   // Start Heap at 512MB
+        commands.add("-Xmx1024M");  // Limit Heap to 1GB (Geyser needs memory)
 
         // cmd.add("-Xms64M");  // Minimum heap
         // cmd.add("-Xmx128M"); // Velocity is lightweight

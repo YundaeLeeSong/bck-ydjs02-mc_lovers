@@ -60,8 +60,8 @@ public class ServerRunner {
         // commands.add("-Xmx1024M"); // Limit Heap to 1GB
 
         
-        commands.add("-Xms256M");  // Start Heap at 256MB (for low memory systems)
-        commands.add("-Xmx512M");  // Limit Heap to 512MB (for low memory systems)
+        commands.add("-Xms1024M");  // Start Heap at 1GB
+        commands.add("-Xmx2048M");  // Limit Heap to 2GB for stability
 
         commands.add("-jar");
         commands.add(jarName);

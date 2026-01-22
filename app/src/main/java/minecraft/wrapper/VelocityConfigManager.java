@@ -58,7 +58,7 @@ force-key-authentication = false
 ping-passthrough = \"ALL\"
 # High timeouts for slow Cloud/OCI servers
 read-timeout = 300000
-connection-timeout = 30000
+connection-timeout = 60000
 
 [servers]
 lobby = \"127.0.0.1:25566\"
@@ -99,12 +99,12 @@ try = [\"lobby\"]
         
         // 3. Enforce Connection Timeout (30s)
         if (newContent.contains("connection-timeout")) {
-             if (!newContent.contains("connection-timeout = 30000")) {
-                 newContent = newContent.replaceAll("connection-timeout = \\d+", "connection-timeout = 30000");
+             if (!newContent.contains("connection-timeout = 60000")) {
+                 newContent = newContent.replaceAll("connection-timeout = \\d+", "connection-timeout = 60000");
                  modified = true;
              }
         } else {
-             newContent += "\nconnection-timeout = 30000";
+             newContent += "\nconnection-timeout = 60000";
              modified = true;
         }
         
