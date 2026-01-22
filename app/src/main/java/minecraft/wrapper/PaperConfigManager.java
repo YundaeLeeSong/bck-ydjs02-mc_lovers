@@ -56,7 +56,9 @@ public class PaperConfigManager {
                "  velocity:\n" +
                "    enabled: true\n" +
                "    online-mode: false\n" +
-               "    secret: " + secret + "\n";
+               "    secret: " + secret + "\n" +
+               "packet-limiter:\n" +
+               "  enabled: false\n";
     }
 
     private void updateExistingConfig(File file, String secret) throws IOException {
