@@ -36,7 +36,7 @@ public class App {
             PluginsLoader pluginsLoader = new PluginsLoader(serverDir);
             pluginsLoader.install();
             
-            ServerRunner serverRunner = new ServerRunner(serverDir, SERVER_JAR_NAME);
+            ServerRunner serverRunner = ServerRunner.getInstance(serverDir, SERVER_JAR_NAME);
 
             // --- Phase 2: Configuration Generation (Shadow Run) ---
             // Only run if configs are missing

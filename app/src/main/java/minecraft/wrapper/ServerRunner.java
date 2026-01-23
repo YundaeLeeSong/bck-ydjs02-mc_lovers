@@ -9,29 +9,50 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * Manages the lifecycle of the Minecraft Server process.
  * <p>
  * Handles starting the server in both standard and "shadow" modes,
- * monitoring its output, and ensuring graceful shutdown.
+ * monitoring its output, and ensuring graceful shutdown via Singleton pattern.
  * </p>
  */
 public class ServerRunner {
 
+    private static volatile ServerRunner INSTANCE;
     private final File workingDir;
     private final String jarName;
     private volatile Process serverProcess;
+    private final Object lock = new Object();
 
     /**
-     * Constructs a new ServerRunner.
+     * Private constructor for Singleton.
      *
      * @param workingDir The directory where the server will run.
      * @param jarName    The name of the server JAR file.
      */
-    public ServerRunner(File workingDir, String jarName) {
+    private ServerRunner(File workingDir, String jarName) {
         this.workingDir = workingDir;
         this.jarName = jarName;
+    }
+
+    /**
+     * Returns the singleton instance of ServerRunner.
+     *
+     * @param workingDir The directory where the server will run.
+     * @param jarName    The name of the server JAR file.
+     * @return The singleton instance.
+     */
+    public static ServerRunner getInstance(File workingDir, String jarName) {
+        if (INSTANCE == null) {
+            synchronized (ServerRunner.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new ServerRunner(workingDir, jarName);
+                }
+            }
+        }
+        return INSTANCE;
     }
 
     /**
@@ -46,51 +67,59 @@ public class ServerRunner {
      * @throws InterruptedException If the thread is interrupted while waiting.
      */
     public void generateConfigs() throws IOException, InterruptedException {
-        System.out.println("Runner: Starting Shadow Run to generate configurations...");
-        
-        List<String> commands = buildJavaCommand(false); // Force nogui for shadow run
-        ProcessBuilder pb = new ProcessBuilder(commands);
-        pb.directory(workingDir);
-        pb.redirectErrorStream(true); // Merge stderr into stdout
-        
-        Process process = pb.start();
-        
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
+        synchronized (lock) {
+            System.out.println("Runner: Starting Shadow Run to generate configurations...");
             
-            String line;
-            boolean initialized = false;
+            List<String> commands = buildJavaCommand(false); // Force nogui for shadow run
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.directory(workingDir);
+            pb.redirectErrorStream(true); // Merge stderr into stdout
             
-            // Monitor output for startup completion
-            while ((line = reader.readLine()) != null) {
-                // Print shadow logs with a prefix
-                System.out.println("[Shadow] " + line);
+            Process process = pb.start();
+            this.serverProcess = process;
+            
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
                 
-                // "Done (s)!" is the standard Minecraft completion message
-                if (line.contains("Done (") && line.contains(")!")) {
-                    System.out.println("Runner: Initialization complete. Stopping server...");
-                    initialized = true;
+                String line;
+                boolean initialized = false;
+                
+                // Monitor output for startup completion
+                while ((line = reader.readLine()) != null) {
+                    // Print shadow logs with a prefix
+                    System.out.println("[Shadow] " + line);
                     
-                    // Send 'stop' command to flush configs and save
-                    writer.write("stop");
-                    writer.newLine();
-                    writer.flush();
-                    break;
+                    // "Done (s)!" is the standard Minecraft completion message
+                    if (line.contains("Done (") && line.contains(")!")) {
+                        System.out.println("Runner: Initialization complete. Stopping server...");
+                        initialized = true;
+                        
+                        // Send 'stop' command to flush configs and save
+                        writer.write("stop");
+                        writer.newLine();
+                        writer.flush();
+                        break;
+                    }
+                }
+                
+                // If process exited without "Done", something went wrong
+                if (!initialized && !process.isAlive()) {
+                    System.err.println("Runner: Shadow run exited prematurely.");
                 }
             }
             
-            // If process exited without "Done", something went wrong
-            if (!initialized && !process.isAlive()) {
-                System.err.println("Runner: Shadow run exited prematurely.");
+            // Wait for the process to actually exit
+            if (!process.waitFor(60, TimeUnit.SECONDS)) {
+                System.err.println("Runner: Shadow run timed out during shutdown. Forcing kill.");
+                process.destroyForcibly();
+            } else {
+                System.out.println("Runner: Shadow Run completed successfully.");
             }
-        }
-        
-        // Wait for the process to actually exit
-        if (!process.waitFor(60, TimeUnit.SECONDS)) {
-            System.err.println("Runner: Shadow run timed out during shutdown. Forcing kill.");
-            process.destroyForcibly();
-        } else {
-            System.out.println("Runner: Shadow Run completed successfully.");
+            
+            // Explicitly ensure cleanup using ProcessHandle just in case
+            cleanupProcess(process);
+            this.serverProcess = null;
+            System.out.println("Runner: Shadow Run cleanup complete.");
         }
     }
 
@@ -103,19 +132,20 @@ public class ServerRunner {
      * @throws InterruptedException If the wait is interrupted.
      */
     public int start(boolean enableGui) throws IOException, InterruptedException {
-        List<String> commands = buildJavaCommand(enableGui);
+        synchronized (lock) {
+            List<String> commands = buildJavaCommand(enableGui);
 
-        System.out.println("Runner: Launching Server...");
-        System.out.println("Runner: Command -> " + String.join(" ", commands));
-        
-        ProcessBuilder pb = new ProcessBuilder(commands);
-        pb.directory(workingDir);
-        pb.inheritIO(); 
+            System.out.println("Runner: Launching Server...");
+            System.out.println("Runner: Command -> " + String.join(" ", commands));
+            
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.directory(workingDir);
+            pb.inheritIO(); 
 
-        this.serverProcess = pb.start();
+            this.serverProcess = pb.start();
+        }
         
         // Note: Shutdown hook is now managed by App.java
-        
         return this.serverProcess.waitFor();
     }
 
@@ -123,21 +153,46 @@ public class ServerRunner {
      * Forcibly terminates the server process if it is running.
      * This method is intended to be called by the main application's shutdown handler.
      */
-    public synchronized void stop() {
-        if (this.serverProcess != null && this.serverProcess.isAlive()) {
-            System.out.println("\nRunner: Waiting for server to shut down (Ctrl+C propagated)...");
+    public void stop() {
+        synchronized (lock) {
+            cleanupProcess(this.serverProcess);
+        }
+    }
+    
+    /**
+     * Cleans up the process and its descendants using ProcessHandle.
+     * 
+     * @param process The process to clean up.
+     */
+    private void cleanupProcess(Process process) {
+        if (process != null && process.isAlive()) {
+            System.out.println("\nRunner: Terminating server process tree...");
+            ProcessHandle handle = process.toHandle();
+            
+            // Terminate descendants first
+            handle.descendants().forEach(child -> {
+                try {
+                    child.destroy();
+                } catch (Exception e) {
+                     // Ignore
+                }
+            });
+
+            // Terminate main process
+            handle.destroy();
+
             try {
-                // Since we use inheritIO, the server process receives the Ctrl+C signal
-                // simultaneously with the wrapper. We must wait for it to handle the
-                // signal and exit gracefully (saving chunks, kicking players, etc.).
-                // Calling destroy() immediately would kill it and cause data loss/timeouts.
-                if (!this.serverProcess.waitFor(30, TimeUnit.SECONDS)) {
-                    System.out.println("Runner: Server unresponsive after 30s. Forcing exit.");
-                    this.serverProcess.destroyForcibly();
+                // Wait for graceful exit
+                if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                    System.out.println("Runner: Server unresponsive. Forcing tree shutdown.");
+                     handle.descendants().forEach(ProcessHandle::destroyForcibly);
+                     handle.destroyForcibly();
                 }
             } catch (InterruptedException e) {
-                System.out.println("Runner: Interrupted while waiting. Forcing exit.");
-                this.serverProcess.destroyForcibly();
+                System.out.println("Runner: Interrupted while waiting. Forcing tree shutdown.");
+                handle.descendants().forEach(ProcessHandle::destroyForcibly);
+                handle.destroyForcibly();
+                Thread.currentThread().interrupt();
             }
         }
     }
