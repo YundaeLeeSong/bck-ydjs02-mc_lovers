@@ -169,7 +169,7 @@ tasks.named("clean") {
         }
         
         // 3. Clean Runtime data directories
-        listOf("minecraft_server", "velocity_proxy").forEach { dirName ->
+        listOf("minecraft_server").forEach { dirName ->
             val dir = project.file(dirName)
             if (dir.exists()) {
                 println("Cleaning runtime directory: $dir")

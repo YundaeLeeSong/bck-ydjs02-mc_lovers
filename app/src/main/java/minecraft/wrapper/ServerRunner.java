@@ -1,21 +1,20 @@
 package minecraft.wrapper;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
- * <b>Service: Process Lifecycle Manager</b>
+ * Manages the lifecycle of the Minecraft Server process.
  * <p>
- * This class handles the low-level details of executing the Minecraft Server process.
- * It is responsible for:
- * <ul>
- *   <li>Constructing the command line arguments.</li>
- *   <li>Locating the correct Java runtime (bundled or system).</li>
- *   <li>Launching the process.</li>
- *   <li><b>Monitoring and Terminating</b> the process gracefully.</li>
- * </ul>
+ * Handles starting the server in both standard and "shadow" modes,
+ * monitoring its output, and ensuring graceful shutdown.
  * </p>
  */
 public class ServerRunner {
@@ -25,8 +24,10 @@ public class ServerRunner {
     private Process serverProcess;
 
     /**
-     * @param workingDir The directory where the server process should be rooted.
-     * @param jarName    The filename of the server executable jar.
+     * Constructs a new ServerRunner.
+     *
+     * @param workingDir The directory where the server will run.
+     * @param jarName    The name of the server JAR file.
      */
     public ServerRunner(File workingDir, String jarName) {
         this.workingDir = workingDir;
@@ -34,116 +35,133 @@ public class ServerRunner {
     }
 
     /**
-     * Configuration: Starts the server process.
+     * Executes a "Shadow Run" to generate default configuration files.
      * <p>
-     * <b>Blocking Operation:</b> This method blocks the calling thread until the server process exits.
-     * It pipes the server's standard output and error streams to the wrapper's console.
+     * Starts the server in a headless mode, waits for initialization to complete
+     * (detected via the "Done" log message), and then immediately sends the
+     * "stop" command. This forces the server to write its default configs to disk.
      * </p>
      *
-     * @param enableGui If {@code true}, the server's GUI window is allowed to open.
-     *                  If {@code false}, the {@code nogui} argument is passed.
-     * @return The process exit code (0 usually indicates success).
-     * @throws IOException If the process cannot be started (e.g., java not found).
-     * @throws InterruptedException If the wrapper thread is interrupted while waiting.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the thread is interrupted while waiting.
+     */
+    public void generateConfigs() throws IOException, InterruptedException {
+        System.out.println("Runner: Starting Shadow Run to generate configurations...");
+        
+        List<String> commands = buildJavaCommand(false); // Force nogui for shadow run
+        ProcessBuilder pb = new ProcessBuilder(commands);
+        pb.directory(workingDir);
+        pb.redirectErrorStream(true); // Merge stderr into stdout
+        
+        Process process = pb.start();
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
+            
+            String line;
+            boolean initialized = false;
+            
+            // Monitor output for startup completion
+            while ((line = reader.readLine()) != null) {
+                // Print shadow logs with a prefix
+                System.out.println("[Shadow] " + line);
+                
+                // "Done (s)!" is the standard Minecraft completion message
+                if (line.contains("Done (") && line.contains(")!")) {
+                    System.out.println("Runner: Initialization complete. Stopping server...");
+                    initialized = true;
+                    
+                    // Send 'stop' command to flush configs and save
+                    writer.write("stop");
+                    writer.newLine();
+                    writer.flush();
+                    break;
+                }
+            }
+            
+            // If process exited without "Done", something went wrong
+            if (!initialized && !process.isAlive()) {
+                System.err.println("Runner: Shadow run exited prematurely.");
+            }
+        }
+        
+        // Wait for the process to actually exit
+        if (!process.waitFor(60, TimeUnit.SECONDS)) {
+            System.err.println("Runner: Shadow run timed out during shutdown. Forcing kill.");
+            process.destroyForcibly();
+        } else {
+            System.out.println("Runner: Shadow Run completed successfully.");
+        }
+    }
+
+    /**
+     * Starts the server process and blocks until it exits.
+     * <p>
+     * Registers a shutdown hook to ensure the process is killed if the wrapper
+     * is terminated.
+     * </p>
+     *
+     * @param enableGui Whether to show the server GUI window.
+     * @return The exit code of the server process.
+     * @throws IOException          If the process cannot be started.
+     * @throws InterruptedException If the wait is interrupted.
      */
     public int start(boolean enableGui) throws IOException, InterruptedException {
-        // 1. Resolve Java Path
-        // We prioritize 'java.home' to support bundled runtimes (jpackage).
-        String javaHome = System.getProperty("java.home");
-        String javaBin = System.getProperty("os.name").toLowerCase().contains("win") ? "bin/java.exe" : "bin/java";
-        String javaPath = new File(javaHome, javaBin).getAbsolutePath();
-        
-        // 2. Build Command Arguments
-        List<String> commands = new ArrayList<>();
-        commands.add(javaPath);
-        // commands.add("-Xms1024M"); // Start Heap at 1GB
-        // commands.add("-Xmx1024M"); // Limit Heap to 1GB
-
-        
-        commands.add("-Xms1024M");  // Start Heap at 1GB
-        commands.add("-Xmx2048M");  // Limit Heap to 2GB for stability
-
-        commands.add("-jar");
-        commands.add(jarName);
-        if (!enableGui) {
-            commands.add("nogui"); // Headless mode
-        }
+        List<String> commands = buildJavaCommand(enableGui);
 
         System.out.println("Runner: Launching Server...");
         System.out.println("Runner: Command -> " + String.join(" ", commands));
         
-        // 3. Configure ProcessBuilder
         ProcessBuilder pb = new ProcessBuilder(commands);
         pb.directory(workingDir);
-        pb.inheritIO(); // Pipe server output to wrapper console
+        pb.inheritIO(); 
 
-        // 4. Start Process
         this.serverProcess = pb.start();
-
-        // 5. Register Graceful Shutdown Hook
-        // If the wrapper is killed (Ctrl+C), this hook ensures the server dies too.
+        
         Thread shutdownHook = new Thread(this::shutdown, "Minecraft-Shutdown-Hook");
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-        // 6. Block until server exits
         int exitCode = this.serverProcess.waitFor();
         
-        // Cleanup hook if normal exit occurred
         try {
             Runtime.getRuntime().removeShutdownHook(shutdownHook);
         } catch (IllegalStateException e) {
-            // Ignored: Hook may already be running if we are shutting down.
+            // Ignored
         } 
         
         return exitCode;
     }
 
     /**
-     * <b>Shutdown Logic:</b> Terminate the server process immediately.
-     * <p>
-     * This method attempts to kill the entire process tree to ensure no "zombie"
-     * processes (like GUI windows) are left behind.
-     * </p>
-     * <p>
-     * Strategy:
-     * <ol>
-     *   <li>Java 9+ {@code descendants().destroyForcibly()} (Cross-platform).</li>
-     *   <li>Windows {@code taskkill /F /T} fallback (Nuclear option for stubborn GUIs).</li>
-     * </ol>
-     * </p>
+     * Builds the command list for the Java process.
+     *
+     * @param enableGui Whether to enable the GUI.
+     * @return The list of command arguments.
+     */
+    private List<String> buildJavaCommand(boolean enableGui) {
+        String javaHome = System.getProperty("java.home");
+        String javaBin = System.getProperty("os.name").toLowerCase().contains("win") ? "bin/java.exe" : "bin/java";
+        String javaPath = new File(javaHome, javaBin).getAbsolutePath();
+        
+        List<String> commands = new ArrayList<>();
+        commands.add(javaPath);
+        commands.add("-Xms1024M");
+        commands.add("-Xmx1024M"); // Reduced to 1024M
+        commands.add("-jar");
+        commands.add(jarName);
+        if (!enableGui) {
+            commands.add("nogui");
+        }
+        return commands;
+    }
+
+    /**
+     * Shutdown hook to forcibly terminate the server process.
      */
     private void shutdown() {
         if (this.serverProcess != null && this.serverProcess.isAlive()) {
-            System.out.println("\nRunner: Shutdown Hook Triggered. Terminating process tree...");
-            long pid = this.serverProcess.pid();
-
-            // Strategy 1: Standard Java API
-            try {
-                this.serverProcess.toHandle().descendants().forEach(handle -> {
-                    System.out.println("Runner: Killing descendant PID " + handle.pid());
-                    handle.destroyForcibly();
-                });
-                this.serverProcess.destroyForcibly();
-            } catch (Exception e) {
-                System.err.println("Runner: Java kill failed: " + e.getMessage());
-            }
-
-            // Strategy 2: Windows Fallback
-            // Java's ProcessHandle sometimes misses GUI child windows on Windows due to handle permissions.
-            // We use the OS native tool to be sure.
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                try {
-                    System.out.println("Runner: Attempting Windows TaskKill for PID " + pid);
-                    new ProcessBuilder("taskkill", "/F", "/T", "/PID", String.valueOf(pid))
-                        .inheritIO()
-                        .start()
-                        .waitFor();
-                } catch (Exception e) {
-                    System.err.println("Runner: Windows TaskKill failed: " + e.getMessage());
-                }
-            }
-
-            System.out.println("Runner: Server process terminated.");
+            System.out.println("\nRunner: Shutdown Hook Triggered. Terminating process...");
+            this.serverProcess.destroyForcibly();
         }
     }
 }
