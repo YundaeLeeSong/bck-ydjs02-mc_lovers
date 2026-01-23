@@ -1,7 +1,6 @@
 package minecraft.wrapper;
 
 import java.io.File;
-import sun.misc.Signal;
 
 /**
  * <b>Application Entry Point</b>
@@ -74,37 +73,60 @@ public class App {
             // --- Phase 4: Execution ---
             NetworkReporter.printReport();
             
-            // Intercept Ctrl+C (SIGINT)
-            try {
-                Signal.handle(new Signal("INT"), signal -> { 
-                     System.out.println("\nWrapper: Caught Ctrl+C. Waiting for server to shut down...");
-                });
-            } catch (Throwable t) {
-                System.out.println("Wrapper: Warning - Could not register Signal Handler (" + t.getMessage() + ")");
-            }
-
             boolean enableGui = Boolean.parseBoolean(System.getenv().getOrDefault("MC_GUI", "true"));
+            
+            // Register centralized Shutdown Hook for cleanup
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                // 1. Stop the server first (blocks until process is dead)
+                serverRunner.stop();
+                
+                // 2. Synchronize output and pause
+                synchronized (serverRunner) {
+                    System.out.println("\n=== Wrapper: Cleanup & Shutdown ===");
+                    System.out.println("It is all cleaned up.");
+                    
+                    try {
+                        // Check if we can interact with the user
+                        if (System.console() != null || System.in.available() >= 0) {
+                             System.out.println("Press any key (or wait 5s) to exit this session...");
+                             
+                             // Simple non-blocking wait loop or timed read simulation
+                             long start = System.currentTimeMillis();
+                             while (System.currentTimeMillis() - start < 5000) {
+                                 if (System.in.available() > 0) {
+                                     System.in.read();
+                                     break;
+                                 }
+                                 Thread.sleep(100);
+                             }
+                        } else {
+                            System.out.println("Non-interactive mode. Exiting in 3s...");
+                            Thread.sleep(3000);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("(Input stream closed. Exiting...)");
+                    }
+                }
+            }, "Wrapper-Cleanup-Hook"));
             
             int exitCode = 0;
             try {
-                // Actual Run (Thread 2)
-                // exitCode = serverRunner.start(enableGui);
+                // Actual Run (blocks until server exits)
                 exitCode = serverRunner.start(false); // make it CLI for OCI
-                System.out.println("Wrapper: Server exited with code: " + exitCode);
+                
+                // Synchronize the exit message so it doesn't mix with the hook
+                synchronized (serverRunner) {
+                    System.out.println("Wrapper: Server exited with code: " + exitCode);
+                }
             } catch (Exception e) {
-                System.err.println("Wrapper: Server crashed: " + e.getMessage());
-                e.printStackTrace();
+                synchronized (serverRunner) {
+                    System.err.println("Wrapper: Server crashed: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 exitCode = 1;
             }
             
-            // --- Phase 5: Clean Cleanup Prompt ---
-            System.out.println("\nIt is all cleaned up, press any key to safely exit this server session..!");
-            try {
-                System.in.read();
-            } catch (Exception e) {
-                // Ignore
-            }
-            
+            // Explicit exit calls the shutdown hook naturally
             System.exit(exitCode);
 
         } catch (Exception e) {
