@@ -1,126 +1,107 @@
 package minecraft.wrapper;
 
 import java.io.File;
-import java.io.IOException;
+import sun.misc.Signal;
 
 /**
- * <b>Application Entry Point: The Orchestrator</b>
+ * <b>Application Entry Point</b>
  * <p>
- * The {@code App} class serves as the <b>Orchestrator</b> for the dual-process architecture.
- * It manages the lifecycle of:
- * <ol>
- *   <li><b>Velocity Proxy</b> (Frontend): Listens on 25565 (Java) and 19132 (Bedrock).
- *       Runs as a background process.</li>
- *   <li><b>Vanilla Server</b> (Backend): Listens on 25566 (Internal).
- *       Runs on the main thread, blocking until the server exits.</li>
- * </ol>
- * </p>
- * <p>
- * <b>Security & Compatibility:</b>
- * Due to the use of a bundled <b>Vanilla</b> Minecraft server (which lacks modern proxy forwarding support),
- * the wrapper currently configures the network in <b>Offline Mode</b>.
- * <ul>
- *   <li>Velocity {@code online-mode} is disabled.</li>
- *   <li>Backend {@code online-mode} is disabled.</li>
- *   <li>Velocity forwarding is set to {@code none}.</li>
- * </ul>
- * This ensures successful connections for both Java and Bedrock clients but disables official Mojang authentication.
- * </p>
- * <p>
- * <b>Lifecycle Management:</b>
- * The wrapper keeps running as long as the Vanilla Server is active. When the Vanilla Server
- * stops (e.g., via GUI or /stop command), the wrapper automatically shuts down the Velocity Proxy
- * and exits.
+ * Orchestrates the lifecycle of the Minecraft Server Wrapper.
+ * Handles component installation, configuration generation (Shadow Run),
+ * environment customization, and the main server execution loop.
  * </p>
  */
 public class App {
 
     private static final String SERVER_DIR_NAME = "minecraft_server";
-    private static final String PROXY_DIR_NAME = "velocity_proxy";
     private static final String SERVER_JAR_NAME = "server.jar";
     private static final String EULA_FILE_NAME = "eula.txt";
 
     /**
-     * Main entry point.
+     * Main method.
      *
      * @param args Command line arguments (unused).
      */
     public static void main(String[] args) {
         File serverDir = new File(SERVER_DIR_NAME);
-        File proxyDir = new File(PROXY_DIR_NAME);
         
         try {
             System.out.println("=== Wrapper: Initialization ===");
 
-            // --- Phase 1: Installation ---
-            // 1. Vanilla Server
-            ServerInstaller serverInstaller = new ServerInstaller(serverDir, SERVER_JAR_NAME, EULA_FILE_NAME);
-            serverInstaller.install();
+            // --- Phase 1: Installation (Loaders) ---
+            // 1. Server Jar
+            ServerLoader serverLoader = new ServerLoader(serverDir, SERVER_JAR_NAME, EULA_FILE_NAME);
+            serverLoader.install();
 
-            // 2. Velocity Proxy & Plugins
-            VelocityInstaller velocityInstaller = new VelocityInstaller(proxyDir);
-            velocityInstaller.install();
-
-            // --- Phase 2: Configuration ---
-            System.out.println("=== Wrapper: Configuration ===");
+            // 2. Plugins
+            PluginsLoader pluginsLoader = new PluginsLoader(serverDir);
+            pluginsLoader.install();
             
-            // Generate Security Token
-            String secret = SecretManager.generateSecret();
-            System.out.println("Wrapper: Generated Forwarding Secret: " + secret);
+            ServerRunner serverRunner = new ServerRunner(serverDir, SERVER_JAR_NAME);
 
-            // Configure Vanilla (Backend)
+            // --- Phase 2: Configuration Generation (Shadow Run) ---
+            // Only run if configs are missing
+            File serverProps = new File(serverDir, "server.properties");
+            File geyserConfigFile = new File(serverDir, "plugins/Geyser-Spigot/config.yml");
+            
+            if (!serverProps.exists() || !geyserConfigFile.exists()) {
+                System.out.println("=== Wrapper: Generating Configurations (First Run) ===");
+                // Run server until initialized, then stop immediately.
+                serverRunner.generateConfigs();
+            } else {
+                System.out.println("=== Wrapper: Configurations Found (Skipping Shadow Run) ===");
+            }
+
+            // --- Phase 3: Configuration Modification ---
+            System.out.println("=== Wrapper: Applying Configuration Overrides ===");
+            
+            // Server Properties (Purpur/Paper/Spigot)
+            // Now strictly modifies existing file from Phase 2
             File propertiesFile = new File(serverDir, "server.properties");
-            ServerPropertiesManager serverConfig = new ServerPropertiesManager(propertiesFile);
+            ServerConfig serverConfig = new ServerConfig(propertiesFile);
             serverConfig.load();
             serverConfig.applyEnvironmentVariables(); 
-            
-            // ENFORCE Architecture Constraints
-            System.out.println("Config: Enforcing Proxy Architecture settings...");
-            // serverConfig.setProperty("server-ip", "");      // Bind to all interfaces
-            serverConfig.setProperty("server-port", "25566");      // Private backend port
-            serverConfig.setProperty("online-mode", "false");      // Delegate auth to Proxy
+            // Enforce port 25565
+            serverConfig.setProperty("server-port", "25565");
+            serverConfig.setProperty("online-mode", "true");
             serverConfig.save();
             
-            // Configure Paper (Backend) - Velocity Forwarding
-            PaperConfigManager paperConfig = new PaperConfigManager(serverDir);
-            paperConfig.configure(secret);
-
-            // Configure Geyser (Velocity Plugin)
-            GeyserConfigManager geyserConfig = new GeyserConfigManager(proxyDir);
+            // Geyser Config
+            // Now strictly modifies existing file from Phase 2
+            GeyserConfig geyserConfig = new GeyserConfig(serverDir);
             geyserConfig.configure();
 
-            // Configure Velocity (Proxy Main)
-            VelocityConfigManager velocityConfig = new VelocityConfigManager(proxyDir);
-            velocityConfig.configure();
-
-            // Configure Proxy Runner
-            VelocityRunner velocityRunner = new VelocityRunner(proxyDir);
-            velocityRunner.configure(secret);
-
-            // --- Phase 3: Execution ---
+            // --- Phase 4: Execution ---
             NetworkReporter.printReport();
             
-            // A. Start Frontend (Velocity) - Background Process
-            velocityRunner.start();
+            // Intercept Ctrl+C (SIGINT)
+            try {
+                Signal.handle(new Signal("INT"), signal -> { 
+                     System.out.println("\nWrapper: Caught Ctrl+C. Waiting for server to shut down...");
+                });
+            } catch (Throwable t) {
+                System.out.println("Wrapper: Warning - Could not register Signal Handler (" + t.getMessage() + ")");
+            }
 
-            // B. Start Backend (Vanilla) - Blocking the Main Thread
-            // The Wrapper stays alive as long as the Vanilla Server is running.
             boolean enableGui = Boolean.parseBoolean(System.getenv().getOrDefault("MC_GUI", "true"));
-            ServerRunner serverRunner = new ServerRunner(serverDir, SERVER_JAR_NAME);
             
             int exitCode = 0;
             try {
-                // exitCode = serverRunner.start(enableGui);   // Normal mode
-                exitCode = serverRunner.start(false);     // Force nogui for testing
-                System.out.println("Wrapper: Backend Server exited with code: " + exitCode);
+                // Actual Run (Thread 2)
+                exitCode = serverRunner.start(enableGui);
+                System.out.println("Wrapper: Server exited with code: " + exitCode);
             } catch (Exception e) {
-                System.err.println("Wrapper: Backend Server crashed: " + e.getMessage());
+                System.err.println("Wrapper: Server crashed: " + e.getMessage());
                 e.printStackTrace();
                 exitCode = 1;
-            } finally {
-                // C. Cleanup: Ensure Proxy is shut down when Backend stops
-                System.out.println("Wrapper: Shutting down Proxy...");
-                velocityRunner.stop();
+            }
+            
+            // --- Phase 5: Clean Cleanup Prompt ---
+            System.out.println("\nIt is all cleaned up, press any key to safely exit this server session..!");
+            try {
+                System.in.read();
+            } catch (Exception e) {
+                // Ignore
             }
             
             System.exit(exitCode);

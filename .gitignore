@@ -1,4 +1,4 @@
-# --- Generated from ./.gitignores on Mon Jan 19 21:54:28 2026 ---
+# --- Generated from ./.gitignores on Fri Jan 23 04:05:15 2026 ---
 
 #############################################
 # A.gitignore
@@ -1151,7 +1151,7 @@ resources/.arch-internal-preview.css
 *.bak
 *.db
 *.avi
-*.pdf
+# *.pdf
 *.ps
 *.mid
 *.midi
@@ -1458,7 +1458,7 @@ _book
 # eBook build output
 *.epub
 *.mobi
-*.pdf
+# *.pdf
 
 #############################################
 # GitHubPages.gitignore
@@ -2859,7 +2859,7 @@ install.php
 #############################################
 # Lilypond.gitignore
 #############################################
-*.pdf
+# *.pdf
 *.ps
 *.midi
 *.mid
