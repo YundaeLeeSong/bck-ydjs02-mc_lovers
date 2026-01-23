@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
+          distribution: 'oracle'
 
       - name: Build with JPackage
         run: ./gradlew jpackage
@@ -47,7 +47,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
+          distribution: 'oracle'
       
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -79,7 +79,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
+          distribution: 'oracle'
       
       - name: Make gradlew executable
         run: chmod +x gradlew
