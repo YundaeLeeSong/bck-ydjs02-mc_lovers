@@ -88,7 +88,8 @@ public class App {
             int exitCode = 0;
             try {
                 // Actual Run (Thread 2)
-                exitCode = serverRunner.start(enableGui);
+                // exitCode = serverRunner.start(enableGui);
+                exitCode = serverRunner.start(false); // make it CLI for OCI
                 System.out.println("Wrapper: Server exited with code: " + exitCode);
             } catch (Exception e) {
                 System.err.println("Wrapper: Server crashed: " + e.getMessage());
