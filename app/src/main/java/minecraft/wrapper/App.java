@@ -37,6 +37,40 @@ public class App {
             pluginsLoader.install();
             
             ServerRunner serverRunner = ServerRunner.getInstance(serverDir, SERVER_JAR_NAME);
+            
+            // Register centralized Shutdown Hook for cleanup
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                // 1. Stop the server first (blocks until process is dead)
+                serverRunner.terminate();
+                
+                // 2. Synchronize output and pause
+                synchronized (serverRunner) {
+                    System.out.println("\n=== Wrapper: Cleanup & Shutdown ===");
+                    System.out.println("It is all cleaned up.");
+                    
+                    try {
+                        // Check if we can interact with the user
+                        if (System.console() != null || System.in.available() >= 0) {
+                             System.out.println("Press any key (or wait 5s) to exit this session...");
+                             
+                             // Simple non-blocking wait loop or timed read simulation
+                             long start = System.currentTimeMillis();
+                             while (System.currentTimeMillis() - start < 5000) {
+                                 if (System.in.available() > 0) {
+                                     System.in.read();
+                                     break;
+                                 }
+                                 Thread.sleep(100);
+                             }
+                        } else {
+                            System.out.println("Non-interactive mode. Exiting in 3s...");
+                            Thread.sleep(3000);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("(Input stream closed. Exiting...)");
+                    }
+                }
+            }, "Wrapper-Cleanup-Hook"));
 
             // --- Phase 2: Configuration Generation (Shadow Run) ---
             // Only run if configs are missing
@@ -75,45 +109,13 @@ public class App {
             
             boolean enableGui = Boolean.parseBoolean(System.getenv().getOrDefault("MC_GUI", "true"));
             
-            // Register centralized Shutdown Hook for cleanup
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                // 1. Stop the server first (blocks until process is dead)
-                serverRunner.stop();
-                
-                // 2. Synchronize output and pause
-                synchronized (serverRunner) {
-                    System.out.println("\n=== Wrapper: Cleanup & Shutdown ===");
-                    System.out.println("It is all cleaned up.");
-                    
-                    try {
-                        // Check if we can interact with the user
-                        if (System.console() != null || System.in.available() >= 0) {
-                             System.out.println("Press any key (or wait 5s) to exit this session...");
-                             
-                             // Simple non-blocking wait loop or timed read simulation
-                             long start = System.currentTimeMillis();
-                             while (System.currentTimeMillis() - start < 5000) {
-                                 if (System.in.available() > 0) {
-                                     System.in.read();
-                                     break;
-                                 }
-                                 Thread.sleep(100);
-                             }
-                        } else {
-                            System.out.println("Non-interactive mode. Exiting in 3s...");
-                            Thread.sleep(3000);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("(Input stream closed. Exiting...)");
-                    }
-                }
-            }, "Wrapper-Cleanup-Hook"));
+
             
             int exitCode = 0;
             try {
                 // Actual Run (blocks until server exits)
-                // exitCode = serverRunner.start(enableGui);
-                exitCode = serverRunner.start(false); // make it CLI for OCI
+                // exitCode = serverRunner.execute(enableGui);
+                exitCode = serverRunner.execute(false); // make it CLI for OCI
                 
                 // Synchronize the exit message so it doesn't mix with the hook
                 synchronized (serverRunner) {

@@ -131,7 +131,7 @@ public class ServerRunner {
      * @throws IOException          If the process cannot be started.
      * @throws InterruptedException If the wait is interrupted.
      */
-    public int start(boolean enableGui) throws IOException, InterruptedException {
+    public int execute(boolean enableGui) throws IOException, InterruptedException {
         synchronized (lock) {
             List<String> commands = buildJavaCommand(enableGui);
 
@@ -153,7 +153,7 @@ public class ServerRunner {
      * Forcibly terminates the server process if it is running.
      * This method is intended to be called by the main application's shutdown handler.
      */
-    public void stop() {
+    public void terminate() {
         synchronized (lock) {
             cleanupProcess(this.serverProcess);
         }
