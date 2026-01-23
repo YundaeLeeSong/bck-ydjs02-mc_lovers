@@ -112,6 +112,7 @@ public class App {
             int exitCode = 0;
             try {
                 // Actual Run (blocks until server exits)
+                // exitCode = serverRunner.start(enableGui);
                 exitCode = serverRunner.start(false); // make it CLI for OCI
                 
                 // Synchronize the exit message so it doesn't mix with the hook
