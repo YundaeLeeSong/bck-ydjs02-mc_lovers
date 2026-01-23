@@ -21,7 +21,7 @@ public class ServerRunner {
 
     private final File workingDir;
     private final String jarName;
-    private Process serverProcess;
+    private volatile Process serverProcess;
 
     /**
      * Constructs a new ServerRunner.
@@ -96,10 +96,6 @@ public class ServerRunner {
 
     /**
      * Starts the server process and blocks until it exits.
-     * <p>
-     * Registers a shutdown hook to ensure the process is killed if the wrapper
-     * is terminated.
-     * </p>
      *
      * @param enableGui Whether to show the server GUI window.
      * @return The exit code of the server process.
@@ -118,18 +114,32 @@ public class ServerRunner {
 
         this.serverProcess = pb.start();
         
-        Thread shutdownHook = new Thread(this::shutdown, "Minecraft-Shutdown-Hook");
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        // Note: Shutdown hook is now managed by App.java
+        
+        return this.serverProcess.waitFor();
+    }
 
-        int exitCode = this.serverProcess.waitFor();
-        
-        try {
-            Runtime.getRuntime().removeShutdownHook(shutdownHook);
-        } catch (IllegalStateException e) {
-            // Ignored
-        } 
-        
-        return exitCode;
+    /**
+     * Forcibly terminates the server process if it is running.
+     * This method is intended to be called by the main application's shutdown handler.
+     */
+    public synchronized void stop() {
+        if (this.serverProcess != null && this.serverProcess.isAlive()) {
+            System.out.println("\nRunner: Waiting for server to shut down (Ctrl+C propagated)...");
+            try {
+                // Since we use inheritIO, the server process receives the Ctrl+C signal
+                // simultaneously with the wrapper. We must wait for it to handle the
+                // signal and exit gracefully (saving chunks, kicking players, etc.).
+                // Calling destroy() immediately would kill it and cause data loss/timeouts.
+                if (!this.serverProcess.waitFor(30, TimeUnit.SECONDS)) {
+                    System.out.println("Runner: Server unresponsive after 30s. Forcing exit.");
+                    this.serverProcess.destroyForcibly();
+                }
+            } catch (InterruptedException e) {
+                System.out.println("Runner: Interrupted while waiting. Forcing exit.");
+                this.serverProcess.destroyForcibly();
+            }
+        }
     }
 
     /**
@@ -145,23 +155,13 @@ public class ServerRunner {
         
         List<String> commands = new ArrayList<>();
         commands.add(javaPath);
-        commands.add("-Xms4096M");
-        commands.add("-Xmx4096M"); // Reduced to 1024M
+        commands.add("-Xms1024M");
+        commands.add("-Xmx1024M"); // Reduced to 1024M
         commands.add("-jar");
         commands.add(jarName);
         if (!enableGui) {
             commands.add("nogui");
         }
         return commands;
-    }
-
-    /**
-     * Shutdown hook to forcibly terminate the server process.
-     */
-    private void shutdown() {
-        if (this.serverProcess != null && this.serverProcess.isAlive()) {
-            System.out.println("\nRunner: Shutdown Hook Triggered. Terminating process...");
-            this.serverProcess.destroyForcibly();
-        }
     }
 }
