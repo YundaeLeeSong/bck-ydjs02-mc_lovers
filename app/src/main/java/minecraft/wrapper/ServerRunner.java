@@ -210,8 +210,8 @@ public class ServerRunner {
         
         List<String> commands = new ArrayList<>();
         commands.add(javaPath);
-        commands.add("-Xms4096M");
-        commands.add("-Xmx4096M"); // Reduced to 1024M
+        commands.add("-Xms1024M");
+        commands.add("-Xmx1024M"); // Reduced to 1024M
         commands.add("-jar");
         commands.add(jarName);
         if (!enableGui) {
