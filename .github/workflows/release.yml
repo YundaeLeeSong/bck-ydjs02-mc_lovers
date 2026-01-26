@@ -6,9 +6,9 @@ on:
 
 jobs:
   # ------------------------------------------------------------------
-  # 1. Build for Windows
+  # 1. Build for Windows (x64 only for now)
   # ------------------------------------------------------------------
-  build-windows:
+  build-windows-x64:
     runs-on: windows-latest
     steps:
       - name: Checkout Code
@@ -19,6 +19,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'oracle'
+          architecture: x64
 
       - name: Build with JPackage
         run: ./gradlew jpackage
@@ -26,18 +27,18 @@ jobs:
       - name: Archive Bundle (Zip)
         run: |
           cd app/build/dist
-          Compress-Archive -Path mc-lovers -DestinationPath mc-lovers-windows.zip
+          Compress-Archive -Path mc-lovers -DestinationPath mc-lovers-windows-x64.zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mc-lovers-windows
-          path: app/build/dist/mc-lovers-windows.zip
+          name: mc-lovers-windows-x64
+          path: app/build/dist/mc-lovers-windows-x64.zip
 
   # ------------------------------------------------------------------
-  # 2. Build for Ubuntu (Generic Linux)
+  # 2. Build for Ubuntu (x64)
   # ------------------------------------------------------------------
-  build-ubuntu:
+  build-ubuntu-x64:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -48,6 +49,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'oracle'
+          architecture: x64
       
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -58,19 +60,19 @@ jobs:
       - name: Archive Bundle (Tar)
         run: |
           cd app/build/dist
-          tar -czvf mc-lovers-ubuntu.tar.gz mc-lovers
+          tar -czvf mc-lovers-ubuntu-x64.tar.gz mc-lovers
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mc-lovers-ubuntu
-          path: app/build/dist/mc-lovers-ubuntu.tar.gz
+          name: mc-lovers-ubuntu-x64
+          path: app/build/dist/mc-lovers-ubuntu-x64.tar.gz
 
   # ------------------------------------------------------------------
-  # 3. Build for MacOS
+  # 3. Build for Ubuntu (ARM64)
   # ------------------------------------------------------------------
-  build-macos:
-    runs-on: macos-latest
+  build-ubuntu-arm64:
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -80,6 +82,40 @@ jobs:
         with:
           java-version: '21'
           distribution: 'oracle'
+          architecture: aarch64
+      
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with JPackage
+        run: ./gradlew jpackage
+
+      - name: Archive Bundle (Tar)
+        run: |
+          cd app/build/dist
+          tar -czvf mc-lovers-ubuntu-arm64.tar.gz mc-lovers
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-ubuntu-arm64
+          path: app/build/dist/mc-lovers-ubuntu-arm64.tar.gz
+
+  # ------------------------------------------------------------------
+  # 4. Build for MacOS (x64 / Intel)
+  # ------------------------------------------------------------------
+  build-macos-x64:
+    runs-on: macos-13
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+          architecture: x64
       
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -90,18 +126,51 @@ jobs:
       - name: Archive Bundle (Zip)
         run: |
           cd app/build/dist
-          zip -r mc-lovers-macos.zip mc-lovers.app
+          zip -r mc-lovers-macos-x64.zip mc-lovers.app
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mc-lovers-macos
-          path: app/build/dist/mc-lovers-macos.zip
+          name: mc-lovers-macos-x64
+          path: app/build/dist/mc-lovers-macos-x64.zip
 
   # ------------------------------------------------------------------
-  # 4. Build for Oracle Linux (Containerized)
+  # 5. Build for MacOS (ARM64 / Apple Silicon)
   # ------------------------------------------------------------------
-  build-oracle-linux:
+  build-macos-arm64:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+          architecture: aarch64
+      
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with JPackage
+        run: ./gradlew jpackage
+
+      - name: Archive Bundle (Zip)
+        run: |
+          cd app/build/dist
+          zip -r mc-lovers-macos-arm64.zip mc-lovers.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-macos-arm64
+          path: app/build/dist/mc-lovers-macos-arm64.zip
+
+  # ------------------------------------------------------------------
+  # 6. Build for Oracle Linux (x64)
+  # ------------------------------------------------------------------
+  build-oracle-linux-x64:
     runs-on: ubuntu-latest
     container: oraclelinux:9
     steps:
@@ -109,7 +178,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Dependencies
-        # Install Java 21, jmods (crucial for jlink/jpackage), tar, and build utils
         run: |
           dnf update -y
           dnf install -y java-21-openjdk-devel java-21-openjdk-jmods tar gzip binutils findutils
@@ -123,19 +191,58 @@ jobs:
       - name: Archive Bundle (Tar)
         run: |
           cd app/build/dist
-          tar -czvf mc-lovers-oracle-linux.tar.gz mc-lovers
+          tar -czvf mc-lovers-oracle-linux-x64.tar.gz mc-lovers
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mc-lovers-oracle-linux
-          path: app/build/dist/mc-lovers-oracle-linux.tar.gz
+          name: mc-lovers-oracle-linux-x64
+          path: app/build/dist/mc-lovers-oracle-linux-x64.tar.gz
 
   # ------------------------------------------------------------------
-  # 5. Create GitHub Release
+  # 7. Build for Oracle Linux (ARM64)
+  # ------------------------------------------------------------------
+  build-oracle-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    container: oraclelinux:9
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          dnf update -y
+          dnf install -y java-21-openjdk-devel java-21-openjdk-jmods tar gzip binutils findutils
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with JPackage
+        run: ./gradlew jpackage
+
+      - name: Archive Bundle (Tar)
+        run: |
+          cd app/build/dist
+          tar -czvf mc-lovers-oracle-linux-arm64.tar.gz mc-lovers
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-lovers-oracle-linux-arm64
+          path: app/build/dist/mc-lovers-oracle-linux-arm64.tar.gz
+
+  # ------------------------------------------------------------------
+  # 8. Create GitHub Release
   # ------------------------------------------------------------------
   release:
-    needs: [build-windows, build-ubuntu, build-macos, build-oracle-linux]
+    needs: 
+      - build-windows-x64
+      - build-ubuntu-x64
+      - build-ubuntu-arm64
+      - build-macos-x64
+      - build-macos-arm64
+      - build-oracle-linux-x64
+      - build-oracle-linux-arm64
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -143,32 +250,53 @@ jobs:
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
-          name: mc-lovers-windows
-          path: artifacts/windows
+          name: mc-lovers-windows-x64
+          path: artifacts/windows-x64
 
-      - name: Download Ubuntu Artifact
+      - name: Download Ubuntu x64 Artifact
         uses: actions/download-artifact@v4
         with:
-          name: mc-lovers-ubuntu
-          path: artifacts/ubuntu
+          name: mc-lovers-ubuntu-x64
+          path: artifacts/ubuntu-x64
 
-      - name: Download MacOS Artifact
+      - name: Download Ubuntu ARM64 Artifact
         uses: actions/download-artifact@v4
         with:
-          name: mc-lovers-macos
-          path: artifacts/macos
+          name: mc-lovers-ubuntu-arm64
+          path: artifacts/ubuntu-arm64
 
-      - name: Download Oracle Linux Artifact
+      - name: Download MacOS x64 Artifact
         uses: actions/download-artifact@v4
         with:
-          name: mc-lovers-oracle-linux
-          path: artifacts/oracle
+          name: mc-lovers-macos-x64
+          path: artifacts/macos-x64
+
+      - name: Download MacOS ARM64 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-macos-arm64
+          path: artifacts/macos-arm64
+
+      - name: Download Oracle Linux x64 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-oracle-linux-x64
+          path: artifacts/oracle-x64
+
+      - name: Download Oracle Linux ARM64 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-lovers-oracle-linux-arm64
+          path: artifacts/oracle-arm64
 
       - name: Publish Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/windows/mc-lovers-windows.zip
-            artifacts/ubuntu/mc-lovers-ubuntu.tar.gz
-            artifacts/macos/mc-lovers-macos.zip
-            artifacts/oracle/mc-lovers-oracle-linux.tar.gz
+            artifacts/windows-x64/mc-lovers-windows-x64.zip
+            artifacts/ubuntu-x64/mc-lovers-ubuntu-x64.tar.gz
+            artifacts/ubuntu-arm64/mc-lovers-ubuntu-arm64.tar.gz
+            artifacts/macos-x64/mc-lovers-macos-x64.zip
+            artifacts/macos-arm64/mc-lovers-macos-arm64.zip
+            artifacts/oracle-x64/mc-lovers-oracle-linux-x64.tar.gz
+            artifacts/oracle-arm64/mc-lovers-oracle-linux-arm64.tar.gz

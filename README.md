@@ -93,3 +93,22 @@ This usually means a previous instance of the server is still running in the bac
 
 **Bedrock Connection Timeout:**
 *   The wrapper automatically fixes this by enforcing `mtu: 1200` in the Geyser config, which is critical for Cloud environments (OCI, AWS).
+
+## Build Architecture
+
+The project is configured to support multiple architectures to ensure broader compatibility, especially for ARM-based systems like Apple Silicon Macs and ARM Linux servers.
+
+### Supported Platforms & Architectures
+
+| OS | Architectures | Notes |
+| :--- | :--- | :--- |
+| **Windows** | `x86_64` (Intel/AMD) | Standard Windows build. |
+| **Ubuntu (Linux)** | `x86_64`, `ARM64` | Covers standard servers and ARM-based instances (e.g., AWS Graviton, Oracle Cloud Ampere). |
+| **MacOS** | `x86_64` (Intel), `ARM64` (Apple Silicon) | Separate builds for Intel Macs and M1/M2/M3 chips to avoid Rosetta translation overhead. |
+| **Oracle Linux** | `x86_64`, `ARM64` | Containerized builds to match Oracle Cloud infrastructure. |
+
+### CI/CD Workflow (`release.yml`)
+
+The GitHub Actions workflow has been modernized to prevent "Architecture Trap" (building only for the runner's architecture).
+*   **Runners**: Uses specific runners for each job (e.g., `ubuntu-24.04-arm` for Linux ARM builds, `macos-latest` for Apple Silicon).
+*   **Artifacts**: Releases are tagged with their specific architecture (e.g., `mc-lovers-ubuntu-arm64.tar.gz`), making it easy for users to download the correct version for their hardware.
