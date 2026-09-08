@@ -1,6 +1,6 @@
 @echo off
 @REM ===========================================================================
-@REM File:         .bat
+@REM File:         dev.bat
 @REM Description:
 @REM   This script checks for and installs a list of hard-coded applications
 @REM   using the Windows Package Manager (winget). Set up initial configuration
@@ -30,14 +30,17 @@
 @REM Date: 
 @REM   2025-09-14
 @REM Version:
-@REM   1.1
+@REM   1.5
 @REM Update History:
 @REM   - (v1.0) 2025-09-14: Initial version created.
 @REM   - (v1.1) 2025-10-20: VS Code detection and Automation of handling .bashrc and README.md added.
+@REM   - (v1.2) 2026-06-19: Non-admin mode is status-only
+@REM   - (v1.3) 2026-06-21: General script refactoring and optimizations applied
+@REM   - (v1.4) 2026-06-21: Added Update-VCRedist function and immediate reboot prompt for VCRedist
+@REM   - (v1.5) 2026-06-21: Added dynamic registry fix for MySQL Shell VCRedist 1603 installation error
 @REM ===========================================================================
 
 @REM --- Hard-coded ANSI/VT color variables ---
-@REM Define colors for console output.
 set "RED=[31m"
 set "GREEN=[32m"
 set "YELLOW=[33m"
@@ -46,17 +49,6 @@ set "RESET=[0m"
 
 @REM Jump to the main execution block to keep the function definitions separate.
 goto :main
-
-
-
-
-
-
-
-
-
-
-
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Display-System-Info
@@ -92,18 +84,12 @@ echo ProgramFiles(x86):       %ProgramFiles(x86)%                (Default 32-bit
 echo USERPROFILE:             %USERPROFILE%                        (Main user profile path)
 echo APPDATA:                 %APPDATA%        (User's roaming app data)
 echo LOCALAPPDATA:            %LOCALAPPDATA%          (User's local app data)
-set USERPROGRAMS=%LOCALAPPDATA%\Programs
+set "USERPROGRAMS=%LOCALAPPDATA%\Programs"
 echo USERPROGRAMS:            %USERPROGRAMS% (User-specific install path)
 echo TEMP[TMP]:               %TEMP%     (User's temporary files directory)
 @REM echo Path:                    %Path%                    (Semicolon-separated search path)
 echo.
 goto :EOF
-
-
-
-
-
-
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Display-Virtualization-Info
@@ -197,554 +183,281 @@ echo.  "wsl --install -d Kali-Linux"
 
 goto :EOF
 
-
-
-
-
-
-
-
-
-
-
 @REM ---------------------------------------------------------------------------
 @REM Function: Check-Admin
-@REM Purpose:
-@REM   Reliably checks if the script is running with administrator privileges
-@REM   using the net session command, which requires elevation.
-@REM
-@REM Output:
-@REM   Sets the IS_ADMIN environment variable to 1 if running as admin,
-@REM   otherwise 0.
 @REM ---------------------------------------------------------------------------
 :Check-Admin
 set "IS_ADMIN=0"
-net session >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-  set "IS_ADMIN=1"
-)
+net session >nul 2>&1 && set "IS_ADMIN=1"
 goto :EOF
-
-
-
-
-
-@REM ---------------------------------------------------------------------------
-@REM Function: Check-Bashrc
-@REM Purpose:
-@REM   Checks for the existence of a .bashrc file in the user's home directory.
-@REM   If it doesn't exist, it creates a new one with a simple comment.
-@REM ---------------------------------------------------------------------------
-:Check-Bashrc
-echo.%CYAN%=========================================================%RESET%
-echo.Checking for .bashrc...
-set "BASHRC_PATH=%USERPROFILE%\.bashrc"
-if exist "%BASHRC_PATH%" (
-  echo.%GREEN%.bashrc exists%RESET%.
-  echo.Found at: "%BASHRC_PATH%"
-  echo.
-) else (
-  echo.%YELLOW%.bashrc not found. Creating a new one...%RESET%
-  echo.# ~/.bashrc > "%BASHRC_PATH%"
-  echo.%GREEN%.bashrc created successfully%RESET%.
-  echo.Created at: "%BASHRC_PATH%"
-)
-goto :EOF
-
-
-@REM ---------------------------------------------------------------------------
-@REM Function: Check-Readme
-@REM Purpose:
-@REM   Checks for the existence of a README.md file in the current directory.
-@REM   If it doesn't exist, it creates a new one with basic content.
-@REM ---------------------------------------------------------------------------
-:Check-Readme
-echo.%CYAN%=========================================================%RESET%
-echo.Checking for README.md...
-set "README_PATH=%~dp0README.md"
-if exist "%README_PATH%" (
-  echo.%GREEN%README.md exists%RESET%.
-  echo.Found at: "%README_PATH%"
-  echo.
-) else (
-  echo.%YELLOW%README.md not found. Creating a new one...%RESET%
-  (
-    echo.# Project README
-    echo.
-    echo.This is a placeholder README.md file.
-    echo.Please update this file with your project information.
-    echo.
-    echo.## Description
-    echo.
-    echo.## Installation
-    echo.
-    echo.## Usage
-    echo.
-    echo.## Contributing
-  ) > "%README_PATH%"
-  echo.%GREEN%README.md created successfully%RESET%.
-  echo.Created at: "%README_PATH%"
-)
-goto :EOF
-
-
-@REM ---------------------------------------------------------------------------
-@REM Function: Check-VSCode
-@REM Purpose:
-@REM   Checks if VS Code is installed and available. If found, opens the current
-@REM   directory, .bashrc, and README.md with 1-second intervals. If not found,
-@REM   prompts the user to run the script in admin mode.
-@REM ---------------------------------------------------------------------------
-:Check-VSCode
-echo.%CYAN%=========================================================%RESET%
-echo.Checking for Visual Studio Code...
-
-setlocal EnableDelayedExpansion
-set APP_NAME=Visual Studio Code
-set PROGRAM_FOLDER=Microsoft VS Code
-
-@REM Check if VS Code command is available
-if defined PROGRAM_FOLDER (
-  call :Find-Directory "!PROGRAM_FOLDER!"
-  if !FOUND_DIR! EQU 1 (
-    echo.!YELLOW!!APP_NAME!!RESET! is !GREEN!already installed - directory check!RESET!.
-    echo.Found at: "!FOUND_DIR_PATH!"
-    echo.
-    goto :vscode_found
-  )
-)
-
-@REM VS Code not found
-echo.%RED%Visual Studio Code is not detected%RESET%.
-echo.%YELLOW%VS Code command 'code' is not available in the current PATH.%RESET%
-echo.
-echo.%CYAN%To install VS Code and run this script with full functionality:%RESET%
-echo.1. Right-click this script and select '%CYAN%Run as administrator%RESET%'
-echo.2. The script will automatically install VS Code and other applications
-echo.3. After installation, you can run this script in normal mode
-echo.
-echo.%YELLOW%Alternatively, you can manually install VS Code from:%RESET%
-echo.https://code.visualstudio.com/
-echo.
-goto :end_check_vscode
-
-:vscode_found
-@REM Open current directory in VS Code
-echo.%CYAN%=========================================================%RESET%
-echo.%YELLOW%Opening files with VS Code...%RESET%
-echo.Opening current directory: %~dp0
-start "" code %~dp0
-
-:end_check_vscode
-endlocal
-goto :EOF
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Find-Directory
-@REM Usage: call :Find-Directory "<Folder_Name>"
-@REM
-@REM Parameters:
-@REM   %1: The folder name to search for (e.g., "Git" or "Google\Drive File Stream").
-@REM
-@REM Purpose:
-@REM   Searches for a directory in common installation paths:
-@REM   - ProgramFiles
-@REM   - ProgramFiles(x86)
-@REM   - HOMEDRIVE
-@REM   - USERPROGRAMS
-@REM
-@REM Output:
-@REM   Sets FOUND_DIR_PATH to the full path if found, empty if not found.
-@REM   Sets FOUND_DIR to 1 if found, 0 if not found.
-@REM
-@REM Note:
-@REM   This function does not use setlocal/endlocal to allow return values
-@REM   to persist in the calling scope.
 @REM ---------------------------------------------------------------------------
 :Find-Directory
 set "FOUND_DIR_PATH="
 set "FOUND_DIR=0"
 set "SEARCH_FOLDER=%~1"
+if not defined SEARCH_FOLDER goto :EOF
 
-if not defined SEARCH_FOLDER (
-  goto :EOF
-)
+if not defined USERPROGRAMS set "USERPROGRAMS=%LOCALAPPDATA%\Programs"
+if not defined JETBRAINS_DIR set "JETBRAINS_DIR=%ProgramFiles%\JetBrains"
 
-@REM Ensure USERPROGRAMS is defined
-if not defined USERPROGRAMS (
-  set "USERPROGRAMS=%LOCALAPPDATA%\Programs"
-)
+if exist "%ProgramFiles%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%ProgramFiles%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
+if exist "%ProgramFiles(x86)%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%ProgramFiles(x86)%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
+if exist "%HOMEDRIVE%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%HOMEDRIVE%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
+if exist "%LOCALAPPDATA%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%LOCALAPPDATA%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
+if exist "%ProgramData%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%ProgramData%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
+if exist "%USERPROGRAMS%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%USERPROGRAMS%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
+if exist "%JETBRAINS_DIR%\%SEARCH_FOLDER%\" (set "FOUND_DIR_PATH=%JETBRAINS_DIR%\%SEARCH_FOLDER%" & set "FOUND_DIR=1" & goto :EOF)
 
-if exist "%ProgramFiles%\%SEARCH_FOLDER%" (
-  set "FOUND_DIR_PATH=%ProgramFiles%\%SEARCH_FOLDER%"
-  set "FOUND_DIR=1"
-  goto :EOF
-)
-
-if exist "%ProgramFiles(x86)%\%SEARCH_FOLDER%" (
-  set "FOUND_DIR_PATH=%ProgramFiles(x86)%\%SEARCH_FOLDER%"
-  set "FOUND_DIR=1"
-  goto :EOF
-)
-
-if exist "%HOMEDRIVE%\%SEARCH_FOLDER%" (
-  set "FOUND_DIR_PATH=%HOMEDRIVE%\%SEARCH_FOLDER%"
-  set "FOUND_DIR=1"
-  goto :EOF
-)
-
-if defined USERPROGRAMS (
-  if exist "%USERPROGRAMS%\%SEARCH_FOLDER%" (
-    set "FOUND_DIR_PATH=%USERPROGRAMS%\%SEARCH_FOLDER%"
-    set "FOUND_DIR=1"
-    goto :EOF
-  )
-)
-
+call :Find-Directory-ByPrefix "%ProgramFiles%"
+if %FOUND_DIR% EQU 1 goto :EOF
+call :Find-Directory-ByPrefix "%ProgramFiles(x86)%"
+if %FOUND_DIR% EQU 1 goto :EOF
+call :Find-Directory-ByPrefix "%HOMEDRIVE%"
+if %FOUND_DIR% EQU 1 goto :EOF
+call :Find-Directory-ByPrefix "%LOCALAPPDATA%"
+if %FOUND_DIR% EQU 1 goto :EOF
+call :Find-Directory-ByPrefix "%ProgramData%"
+if %FOUND_DIR% EQU 1 goto :EOF
+call :Find-Directory-ByPrefix "%USERPROGRAMS%"
+if %FOUND_DIR% EQU 1 goto :EOF
+call :Find-Directory-ByPrefix "%JETBRAINS_DIR%"
 goto :EOF
 
+:Find-Directory-ByPrefix
+set "SEARCH_BASE=%~1"
+if not exist "%SEARCH_BASE%\" goto :EOF
+for /d %%D in ("%SEARCH_BASE%\%SEARCH_FOLDER%*") do (
+  set "FOUND_DIR_PATH=%%~fD"
+  set "FOUND_DIR=1"
+  goto :break_found_dir
+)
+:break_found_dir
+goto :EOF
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Install-App
-@REM Usage: call :Install-App "<winget_ID>" "<Application_Name>" "<Executable_Command>" "<Program_Files_Folder_Name>"
-@REM
-@REM Parameters:
-@REM   %1: The winget ID (e.g., "Git.Git").
-@REM   %2: A descriptive name for the application (e.g., "Git").
-@REM   %3: The executable command to check (e.g., "git").
-@REM   %4: The folder name to check for in Program Files (e.g., "Git").
-@REM
-@REM Purpose:
-@REM   This function checks if an application is installed via winget and,
-@REM   if not, attempts to install it. It provides clear, colored feedback
-@REM   to the user throughout the process.
 @REM ---------------------------------------------------------------------------
 :Install-App
 setlocal EnableDelayedExpansion
-set APP_ID=%~1
-set APP_NAME=%~2
-set APP_CMD=%~3
-set PROGRAM_FOLDER=%~4
+set "APP_ID=%~1"
+set "APP_NAME=%~2"
+set "APP_CMD=%~3"
+set "PROGRAM_FOLDER=%~4"
+set "SKIP_VERIFY=%~5"
+set "REQUIRE_REBOOT=%~6"
+set "_TEMP_REBOOT="
 
-echo.
 echo.
 echo.%CYAN%=========================================================%RESET%
 echo.Checking for !YELLOW!!APP_NAME!!RESET!...
 
-@REM Check if the PROGRAM_FOLDER variable is defined.
 if defined PROGRAM_FOLDER (
   call :Find-Directory "!PROGRAM_FOLDER!"
   if !FOUND_DIR! EQU 1 (
     echo.!YELLOW!!APP_NAME!!RESET! is !GREEN!already installed - directory check!RESET!.
-    echo.!YELLOW!Found at%RESET%: "!FOUND_DIR_PATH!"
-    echo.
+    echo.Found at: "!FOUND_DIR_PATH!"
     goto :end_install_app
   )
 )
 
-@REM Check if the APP_CMD variable is defined.
 if defined APP_CMD (
-  "!APP_CMD!" --version >nul 2>&1
-  if !ERRORLEVEL! EQU 0 (
+  where "!APP_CMD!" >nul 2>&1 && (
     echo.!YELLOW!!APP_NAME!!RESET! is !GREEN!already installed - command check!RESET!.
     goto :end_install_app
   )
 )
 
-@REM Check with winget if the app is installed.
-call winget list --id "!APP_ID!" --exact >nul 2>&1
-if !ERRORLEVEL! EQU 0 (
+winget list --id "!APP_ID!" --exact >nul 2>&1 && (
   echo.!YELLOW!!APP_NAME!!RESET! is !GREEN!already installed - winget check!RESET!.
   goto :end_install_app
 )
 
-echo.!YELLOW!!APP_NAME! not found via any check.!RESET!
-echo.!CYAN!=========================================================!RESET!
-echo.!RED!!APP_NAME! not found.!RESET!
-echo.!YELLOW!Attempting to install !APP_NAME!...!RESET!
-
-@REM Install with non-interactive flags to avoid user prompts.
+echo.!YELLOW!!APP_NAME! not found. Attempting to install...!RESET!
 winget install --id "!APP_ID!" --accept-package-agreements --accept-source-agreements --force
 if !ERRORLEVEL! EQU 0 (
   echo.!GREEN!!APP_NAME! was installed successfully.!RESET!
+  if /I "!REQUIRE_REBOOT!"=="REQUIRE_REBOOT" (
+    echo.!RED!Restart is required to complete the installation for !APP_NAME!.!RESET!
+    set "_TEMP_REBOOT=1"
+  )
 ) else (
-  echo.!RED!Installation of !APP_NAME! failed - Error: !ERRORLEVEL!!RESET!
-  echo.!RED!Please ensure the winget ID is correct and you have an active internet connection.!RESET!
+  echo.!RED!Installation of !APP_NAME! failed.!RESET!
 )
 
 :end_install_app
-"!APP_CMD!" -version >nul 2>&1
-if !ERRORLEVEL! EQU 0 (
-  echo.!GREEN!Verifying !APP_NAME! installation...!RESET!
-  echo.!GREEN!!APP_NAME! with !RED!-version!RESET! flag:!RESET!
-  "!APP_CMD!" -version
-)
-"!APP_CMD!" --version >nul 2>&1
-if !ERRORLEVEL! EQU 0 (
-  echo.!GREEN!Verifying !APP_NAME! installation...!RESET!
-  echo.!GREEN!!APP_NAME! with !RED!--version!RESET! flag:!RESET!
-  "!APP_CMD!" --version
-)
-"!APP_CMD!" -v >nul 2>&1
-if !ERRORLEVEL! EQU 0 (
-  echo.!GREEN!Verifying !APP_NAME! installation...!RESET!
-  echo.!GREEN!!APP_NAME! with !RED!-v!RESET! flag:!RESET!
-  "!APP_CMD!" -v
-)
+if /I "!SKIP_VERIFY!"=="SKIP_VERIFY" goto :end_install_app_done
+if not defined APP_CMD goto :end_install_app_done
 
-endlocal
+echo.%GREEN%Verifying installation...%RESET%
+call "!APP_CMD!" --version >nul 2>&1 && (echo.!GREEN!!APP_NAME! --version:!RESET! & call "!APP_CMD!" --version)
+call "!APP_CMD!" -version >nul 2>&1 && (echo.!GREEN!!APP_NAME! -version:!RESET! & call "!APP_CMD!" -version)
+call "!APP_CMD!" -v >nul 2>&1 && (echo.!GREEN!!APP_NAME! -v:!RESET! & call "!APP_CMD!" -v)
+
+:end_install_app_done
+if defined _TEMP_REBOOT (
+  endlocal
+  set "GLOBAL_REBOOT_REQUIRED=1"
+) else (
+  endlocal
+)
 goto :EOF
 
+@REM ---------------------------------------------------------------------------
+@REM Function: Update-VCRedist
+@REM ---------------------------------------------------------------------------
+:Update-VCRedist
+setlocal EnableDelayedExpansion
+set "APP_ID=%~1"
+set "APP_NAME=%~2"
+set "REQUIRE_REBOOT=%~3"
+set "_TEMP_REBOOT="
 
+echo.
+echo.%CYAN%=========================================================%RESET%
+echo.Checking for updates for !YELLOW!!APP_NAME!!RESET!...
 
+winget upgrade --id "!APP_ID!" --accept-package-agreements --accept-source-agreements > "%TEMP%\winget_upgrade_!APP_ID!.log" 2>&1
+findstr /i /C:"No applicable update found" /C:"No available upgrade found" /C:"No newer package versions" "%TEMP%\winget_upgrade_!APP_ID!.log" >nul 2>&1
+if !ERRORLEVEL! EQU 0 (
+  echo.!GREEN!!APP_NAME! is up to date.!RESET!
+  goto :end_update_vcredist
+)
+findstr /i /C:"No installed package found matching input criteria" "%TEMP%\winget_upgrade_!APP_ID!.log" >nul 2>&1
+if !ERRORLEVEL! EQU 0 (
+  echo.!YELLOW!!APP_NAME! is not installed. Skipping update.!RESET!
+  goto :end_update_vcredist
+)
+echo.!GREEN!!APP_NAME! has been updated.!RESET!
+if /I "!REQUIRE_REBOOT!"=="REQUIRE_REBOOT" (
+  echo.!RED!Restart is required to complete the update for !APP_NAME!.!RESET!
+  set "_TEMP_REBOOT=1"
+)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+:end_update_vcredist
+if defined _TEMP_REBOOT (
+  endlocal
+  set "GLOBAL_REBOOT_REQUIRED=1"
+) else (
+  endlocal
+)
+goto :EOF
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Duplicate-Make
-@REM Usage: 
-@REM   call :Duplicate-Make
-@REM
-@REM Parameters: 
-@REM   None
-@REM 
-@REM Purpose: 
-@REM   Check if there is 'cmake' already, if so, end the function.
-@REM   Detect 'gmake' or 'dmake' in the order.
-@REM   If found any, copy the detected (in order) program as 'make' for compatibility with Makefile.
-@REM   To find 'gmake.exe' or 'dmake' in the order, it uses 'where' command to locate it.
 @REM ---------------------------------------------------------------------------
-
 :Duplicate-Make
 setlocal EnableDelayedExpansion
-echo.
-@REM Check if 'make' command is already available
-make --version >nul 2>&1
-if !ERRORLEVEL! EQU 0 (
-  echo.%GREEN%'make' command is already available. No action needed.%RESET%
-  endlocal
-  goto :EOF
-)
-@REM Find the location of gmake.exe by cmd defualt PATH search command, 'where'.
-for /f "delims=" %%i in ('where dmake.exe 2^>nul') do (
-  set "MAKE_SRC_PATH=%%i"
-)
-for /f "delims=" %%i in ('where gmake.exe 2^>nul') do (
-  set "MAKE_SRC_PATH=%%i"
-)
-@REM If gmake.exe is found, show the path for debugging.
-if defined MAKE_SRC_PATH (
-  for %%d in ("!MAKE_SRC_PATH!") do set "MAKE_SRC_DIR=%%~dpd"
-  echo.%YELLOW%Found gmake.exe is located at: "!MAKE_SRC_DIR!"%RESET%
-  echo.%YELLOW%Found gmake.exe at: "!MAKE_SRC_PATH!"%RESET%
-  echo.%YELLOW%Copying gmake.exe to make.exe...%RESET%
-  @REM The copy must be located at the same directory as the found gmake.exe.
-  copy "!MAKE_SRC_PATH!" "!MAKE_SRC_DIR!make.exe" /Y >nul
-  echo.%GREEN%make.exe created successfully at "!MAKE_SRC_DIR!make.exe".%RESET%
+make --version >nul 2>&1 && (echo.%GREEN%'make' is already available.%RESET% & endlocal & goto :EOF)
+
+set "SRC="
+where dmake.exe >nul 2>&1 && for /f "delims=" %%i in ('where dmake.exe') do set "SRC=%%i"
+where gmake.exe >nul 2>&1 && for /f "delims=" %%i in ('where gmake.exe') do set "SRC=%%i"
+
+if defined SRC (
+  for %%d in ("!SRC!") do set "SDIR=%%~dpd"
+  copy "!SRC!" "!SDIR!make.exe" /Y >nul
+  echo.%GREEN%make.exe created at "!SDIR!".%RESET%
 ) else (
-  echo.%CYAN%gmake.exe not found in the system PATH. No renaming needed.%RESET%
+  echo.%CYAN%gmake.exe not found.%RESET%
 )
 endlocal
 goto :EOF
-
-
-
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Authenticate-gh
-@REM Purpose:
-@REM   Checks GitHub CLI authentication status and handles login/reset flow.
-@REM   Prompts user to reset authentication if already initialized, otherwise
-@REM   initiates login process.
 @REM ---------------------------------------------------------------------------
 :Authenticate-gh
 setlocal EnableDelayedExpansion
-
-call gh auth status --hostname github.com >NUL 2>&1
-if !ERRORLEVEL! NEQ 0 (
-  @REM Auth is NOT initialized...
-  set "confirm=n"
-) else (
-  @REM Auth is initialized...
-  set /p "confirm=Reset gh auth config? (y/n): "
-)
-if /I "!confirm!"=="y" (
-    echo Resetting configuration...
+call gh auth status --hostname github.com >nul 2>&1
+if !ERRORLEVEL! EQU 0 (
+  set /p "confirm=Reset gh auth config? (y/N): "
+  if /I "!confirm!"=="y" (
+    echo.%YELLOW%Resetting configuration...%RESET%
     call gh auth logout --hostname github.com
-    if !ERRORLEVEL! NEQ 0 (
-      echo.!RED!Failed to logout. Continuing...!RESET!
-    )
-)
-pause
-call gh auth status --hostname github.com >NUL 2>&1
-if !ERRORLEVEL! NEQ 0 (
-  echo Auth is !RED!NOT initialized!RESET!...
-  echo Starting login...
-  call gh auth login
+  ) else (
+    echo.%GREEN%Auth is initialized. Skipping login.%RESET%
+    goto :end_auth_gh
+  )
 ) else (
-  echo Auth is !GREEN!initialized!RESET!...
-  echo Skipping login.
+  echo.%RED%Auth is NOT initialized.%RESET%
 )
-pause
+echo.%CYAN%Starting login...%RESET%
+call gh auth login
 
+:end_auth_gh
 endlocal
 goto :EOF
 
-
-
-
-
-
-
-
-
-
+@REM ---------------------------------------------------------------------------
+@REM Function: Prompt-Path
+@REM ---------------------------------------------------------------------------
+:Prompt-Path
+echo.
+echo.%YELLOW%Add this to your PATH to use %~1 from any prompt:%RESET%
+echo.%CYAN%%FOUND_DIR_PATH%%~2%RESET%
+pause
+goto :EOF
 
 @REM ===========================================================================
 :main
-@REM Main execution starts here
 @REM ===========================================================================
 call :Display-System-Info
 call :Check-Admin
 
-
 if "%IS_ADMIN%"=="0" (
   echo.
-  echo.
-  echo.
-  echo.
   echo.%CYAN%=========================================================%RESET%
-  echo.%CYAN%The script is running with %RED%normal user, non-administrator%RESET% privileges.%RESET%
+  echo.%RED%Running without administrator privileges.%RESET%
   echo.%CYAN%=========================================================%RESET%
   echo.
-  call :Check-Bashrc
-  call :Check-Readme
-  call :Check-VSCode
-
-  @REM Open the .bashrc config file asynchronously
-  timeout /t 2 /nobreak >nul
-  start "" "%USERPROFILE%\.bashrc"
-  echo.%GREEN%%USERPROFILE%\.bashrc opened successfully in VS Code%RESET%.
-  start "" "%~dp0README.md"
-  echo.%GREEN%%~dp0README.md opened successfully in VS Code%RESET%.
-
-  echo.
-  echo.%GREEN%Non-admin tasks completed.%RESET%
+  echo.%YELLOW%Status-only mode. Run as admin to install apps.%RESET%
   pause
   exit /b 0
-) else (
-  echo.
-  echo.
-  echo.
-  echo.
-  echo.%CYAN%=========================================================%RESET%
-  echo.%CYAN%The script is running with %GREEN%administrator%RESET% privileges.%RESET%
-  echo.%CYAN%=========================================================%RESET%
-  echo.
-  call :Display-Virtualization-Info
 )
 
-echo.%CYAN%========================================================= Utilities, Install...%RESET%
+call :Display-Virtualization-Info
+
+@REM ---------------------------------------------------------------------------
+@REM Platform Dependents - Web Browsers & Utilities
+@REM ---------------------------------------------------------------------------
+echo.%CYAN%========================================================= Utilities%RESET%
 pause
-@REM ---------------------------------------------------------------------------
-@REM Platform Dependents - Web Browsers & IDEs
-@REM ---------------------------------------------------------------------------
 call :Install-App "Mozilla.Firefox" "Firefox" "firefox" "Mozilla Firefox"
 call :Install-App "Google.Chrome" "Google Chrome" "chrome" "Google\Chrome"
 call :Install-App "Google.GoogleDrive" "Google Drive for Desktop" "GoogleDriveFS" "Google\Drive File Stream"
-@REM Here, 1. look up Google\Drive File Stream directory, if there is found, start (open) the directory. If not found, just skip.
-@REM 2. Also check if G drive exists. Only open the directory if folder is found AND G drive does not exist.
+
 call :Find-Directory "Google\Drive File Stream"
 if %FOUND_DIR% EQU 1 (
   if not exist "G:\" (
     echo.%CYAN%Opening Google Drive File Stream directory...%RESET%
-    echo.Found at: "%FOUND_DIR_PATH%"
-    echo.%GREEN%Google Drive File Stream directory opened successfully.%RESET%
     start "" "%FOUND_DIR_PATH%"
-  ) else (
-    echo.%YELLOW%G drive already exists. Skipping directory open.%RESET%
   )
 )
+
 call :Install-App "Microsoft.VisualStudioCode" "Visual Studio Code" "code" "Microsoft VS Code"
 call :Install-App "Adobe.Acrobat.Reader.64-bit" "Adobe Acrobat Reader DC" "acrordc.exe" "Adobe"
 
-echo.%CYAN%========================================================= Shell/Container Natives, Install...%RESET%
+@REM ---------------------------------------------------------------------------
+@REM Platform Environments - POSIX Shells, Version Control, & Containers
+@REM ---------------------------------------------------------------------------
+echo.%CYAN%========================================================= Shell/Container%RESET%
 pause
-@REM ---------------------------------------------------------------------------
-@REM Platform Dependents - Lightweight POSIX "shell environment" for Windows, with Version Control Systems
-@REM  1. A bash-based shell on Windows
-@REM  2. None (No virtualized Linux environment)
-@REM ---------------------------------------------------------------------------
 call :Install-App "Git.Git" "Git" "git" "Git"
 call :Install-App "GitHub.cli" "GitHub CLI" "gh" "GitHub CLI"
 call :Authenticate-gh
 call :Install-App "GLab.GLab" "GitLab CLI" "glab" "glab"
-call :Check-Bashrc
-@REM ---------------------------------------------------------------------------
-@REM Platform Dependents - POSIX/Unix compatibility "layer (A full environment)" for Windows ("M"inimal "SYS"tem "2".)
-@REM  1. A bash-based shell on Windows
-@REM  2. A "Pacman" package manager (from Arch Linux)
-@REM  3. GNU toolchains (GCC, make, autotools)
-@REM  4. Build Windows-native on virtual Linux environment
-@REM ---------------------------------------------------------------------------
 call :Install-App "MSYS2.MSYS2" "MSYS2" "mintty" "msys64"
-@REM ---------------------------------------------------------------------------
-@REM Platform Independent - Container Platform (Docker Desktop)
-@REM  1. Container runtime and orchestration
-@REM  2. Docker Desktop includes Docker Engine, Docker CLI, Docker Compose
-@REM  3. GUI for managing images and containers
-@REM  4. Build Linux-native (WSL2 processor) on virtual Linux environment
-@REM ---------------------------------------------------------------------------
 call :Install-App "Microsoft.WSL" "Windows Subsystem for Linux" "wsl" "WSL"
 call :Install-App "Docker.DockerDesktop" "Docker Desktop" "docker" "Docker"
 
-echo.%CYAN%========================================================= Windows Natives Dev, Install...%RESET%
+@REM ---------------------------------------------------------------------------
+@REM Native Development - C/C++, Node.js, Python, & Scripting Tools
+@REM ---------------------------------------------------------------------------
+echo.%CYAN%========================================================= Natives Dev%RESET%
 pause
-@REM ---------------------------------------------------------------------------
-@REM Platform Dependents - native C/C++ Development Tools with Perl
-@REM ---------------------------------------------------------------------------
 call :Install-App "StrawberryPerl.StrawberryPerl" "Strawberry Perl" "perl" "Strawberry"
 call :Install-App "MinGW.MinGW" "C compiler (MinGW)" "gcc" "MinGW"
 call :Install-App "MinGW.MinGW" "C++ compiler (MinGW)" "g++" "MinGW"
@@ -752,18 +465,60 @@ call :Duplicate-Make
 call :Install-App "MinGW.MinGW" "Make (MinGW)" "make" "MinGW"
 call :Install-App "Kitware.CMake" "CMake" "cmake" "CMake"
 call :Install-App "NSIS.NSIS" "NSIS (Installer Creator)" "makensis" "NSIS"
+
+call :Find-Directory "NSIS"
+if %FOUND_DIR% EQU 1 call :Prompt-Path "NSIS" "\Bin"
+
 call :Install-App "MiKTeX.MiKTeX" "MiKTeX" "pdflatex" "MiKTeX"
+call :Install-App "AutoHotkey.AutoHotkey" "AutoHotkey" "AutoHotkey" "AutoHotkey" "SKIP_VERIFY"
+call :Install-App "OpenJS.NodeJS.LTS" "Node.js (LTS)" "node" "nodejs"
+call :Install-App "astral-sh.uv" "uv" "uv" "uv"
+call :Install-App "prefix-dev.pixi" "pixi" "pixi" "pixi"
+
+@REM ---------------------------------------------------------------------------
+@REM Platform Independent - IDEs & Development Tools
+@REM ---------------------------------------------------------------------------
+echo.%CYAN%========================================================= IDEs%RESET%
+pause
+call :Install-App "JetBrains.PyCharm" "PyCharm" "" "PyCharm" "SKIP_VERIFY"
+call :Install-App "JetBrains.IntelliJIDEA.Community" "IntelliJ IDEA Community" "" "IntelliJ IDEA" "SKIP_VERIFY"
+call :Install-App "Amazon.Kiro" "Kiro" "" "Kiro" "SKIP_VERIFY"
+call :Install-App "Anysphere.Cursor" "Cursor" "" "Cursor" "SKIP_VERIFY"
+call :Install-App "Google.AntigravityIDE" "Antigravity IDE" "" "Antigravity" "SKIP_VERIFY"
+call :Install-App "Postman.Postman" "Postman" "" "Postman" "SKIP_VERIFY"
+call :Install-App "DBeaver.DBeaver.Community" "DBeaver" "" "DBeaver" "SKIP_VERIFY"
+@REM Install and Update Visual C++ Redistributable 2015+ (both x64 and x86)
+call :Install-App "Microsoft.VCRedist.2015+.x64" "Visual C++ Redistributable 2015+ (x64)" "" "" "SKIP_VERIFY" "REQUIRE_REBOOT"
+call :Update-VCRedist "Microsoft.VCRedist.2015+.x64" "Visual C++ Redistributable 2015+ (x64)" "REQUIRE_REBOOT"
+
+call :Install-App "Microsoft.VCRedist.2015+.x86" "Visual C++ Redistributable 2015+ (x86)" "" "" "SKIP_VERIFY" "REQUIRE_REBOOT"
+call :Update-VCRedist "Microsoft.VCRedist.2015+.x86" "Visual C++ Redistributable 2015+ (x86)" "REQUIRE_REBOOT"
+
+if "%GLOBAL_REBOOT_REQUIRED%"=="1" (
+  echo.
+  echo.%RED%A reboot is required to complete the installation/update of Visual C++ Redistributable.%RESET%
+  echo.%YELLOW%Please reboot your system and run this script again to continue with the remaining installations.%RESET%
+  goto :Prompt-Reboot
+)
+
+@REM Fix for MySQL Shell MSI bug checking the wrong registry key for x64 VCRedist
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$v = (Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\DevDiv\vc\Servicing\14.0\RuntimeMinimum' -Name 'Version' -EA Ignore).Version; if ($v) { New-Item 'HKLM:\SOFTWARE\Microsoft\DevDiv\vc\Servicing\14.0\RuntimeMinimum' -Force -EA Ignore | Out-Null; Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\DevDiv\vc\Servicing\14.0\RuntimeMinimum' -Name 'Version' -Value $v -EA Ignore }"
+
+call :Install-App "Oracle.MySQLShell" "MySQL Shell" "mysqlsh" "MySQL"
 
 echo.
 echo.%GREEN%All specified applications have been processed.%RESET%
+echo.%YELLOW%It is recommended to reboot the system.%RESET%
 
-@REM recommend to reboot the system
-echo.%YELLOW%It is recommended to %RED%reboot%RESET% the system to apply the changes.%RESET%
-echo.%YELLOW%Do you want to %RED%reboot%RESET% the system now? (y/n)%RESET%
-set /p REBOOT=
-if "%REBOOT%"=="y" (
-  shutdown /r /t 0
-)
+:Prompt-Reboot
+set /p REBOOT="Reboot now? (y/N): "
+if /I "%REBOOT%"=="y" shutdown /r /t 0
 
 pause
 exit /b 0
+
+
+
+@REM -----------------------------
+@REM winget search <ID>
+@REM -----------------------------
