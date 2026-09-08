@@ -1,4 +1,4 @@
-# --- Generated from ./.gitignores on Mon Jul 13 19:23:04 2026 ---
+# --- Generated from ./.gitignores on Thu Jul 16 19:29:57 2026 ---
 
 #############################################
 # A.gitignore
@@ -6121,9 +6121,6 @@ obj/
 [Bb]uilds/
 [Bb]in/
 [Ee]xt/
-
-
-*.[Dd][Oo][Cc]
 
 *.exe
 *.dll
