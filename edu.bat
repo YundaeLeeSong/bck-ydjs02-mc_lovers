@@ -359,10 +359,11 @@ goto :EOF
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Find-Directory
-@REM Usage: call :Find-Directory "<Folder_Name>"
+@REM Usage: call :Find-Directory "<Folder_Name_or_Prefix>"
 @REM
 @REM Parameters:
-@REM   %1: The folder name to search for (e.g., "Git" or "Google\Drive File Stream").
+@REM   %1: Folder name or prefix to search for (e.g., "Git", "miniforge", "Google\Drive File Stream").
+@REM       Tries an exact path first, then the first directory whose name starts with this value.
 @REM
 @REM Purpose:
 @REM   Searches for a directory in common installation paths:
@@ -370,6 +371,8 @@ goto :EOF
 @REM   - ProgramFiles(x86)
 @REM   - HOMEDRIVE
 @REM   - USERPROGRAMS
+@REM   - JETBRAINS_DIR
+@REM   - ProgramData
 @REM
 @REM Output:
 @REM   Sets FOUND_DIR_PATH to the full path if found, empty if not found.
@@ -393,44 +396,112 @@ if not defined USERPROGRAMS (
   set "USERPROGRAMS=%LOCALAPPDATA%\Programs"
 )
 
-if exist "%ProgramFiles%\%SEARCH_FOLDER%" (
+@REM Ensure JETBRAINS_DIR is defined
+if not defined JETBRAINS_DIR (
+  set "JETBRAINS_DIR=%ProgramFiles%\JetBrains"
+)
+
+if exist "%ProgramFiles%\%SEARCH_FOLDER%\" (
   set "FOUND_DIR_PATH=%ProgramFiles%\%SEARCH_FOLDER%"
   set "FOUND_DIR=1"
   goto :EOF
 )
 
-if exist "%ProgramFiles(x86)%\%SEARCH_FOLDER%" (
+if exist "%ProgramFiles(x86)%\%SEARCH_FOLDER%\" (
   set "FOUND_DIR_PATH=%ProgramFiles(x86)%\%SEARCH_FOLDER%"
   set "FOUND_DIR=1"
   goto :EOF
 )
 
-if exist "%HOMEDRIVE%\%SEARCH_FOLDER%" (
+if exist "%HOMEDRIVE%\%SEARCH_FOLDER%\" (
   set "FOUND_DIR_PATH=%HOMEDRIVE%\%SEARCH_FOLDER%"
   set "FOUND_DIR=1"
   goto :EOF
 )
 
+if exist "%LOCALAPPDATA%\%SEARCH_FOLDER%\" (
+  set "FOUND_DIR_PATH=%LOCALAPPDATA%\%SEARCH_FOLDER%"
+  set "FOUND_DIR=1"
+  goto :EOF
+)
+
+if exist "%ProgramData%\%SEARCH_FOLDER%\" (
+  set "FOUND_DIR_PATH=%ProgramData%\%SEARCH_FOLDER%"
+  set "FOUND_DIR=1"
+  goto :EOF
+)
+
 if defined USERPROGRAMS (
-  if exist "%USERPROGRAMS%\%SEARCH_FOLDER%" (
+  if exist "%USERPROGRAMS%\%SEARCH_FOLDER%\" (
     set "FOUND_DIR_PATH=%USERPROGRAMS%\%SEARCH_FOLDER%"
     set "FOUND_DIR=1"
     goto :EOF
   )
 )
 
+if defined JETBRAINS_DIR (
+  if exist "%JETBRAINS_DIR%\%SEARCH_FOLDER%\" (
+    set "FOUND_DIR_PATH=%JETBRAINS_DIR%\%SEARCH_FOLDER%"
+    set "FOUND_DIR=1"
+    goto :EOF
+  )
+)
+
+call :Find-Directory-ByPrefix "%ProgramFiles%"
+if %FOUND_DIR% EQU 1 goto :EOF
+
+call :Find-Directory-ByPrefix "%ProgramFiles(x86)%"
+if %FOUND_DIR% EQU 1 goto :EOF
+
+call :Find-Directory-ByPrefix "%HOMEDRIVE%"
+if %FOUND_DIR% EQU 1 goto :EOF
+
+call :Find-Directory-ByPrefix "%LOCALAPPDATA%"
+if %FOUND_DIR% EQU 1 goto :EOF
+
+call :Find-Directory-ByPrefix "%ProgramData%"
+if %FOUND_DIR% EQU 1 goto :EOF
+
+if defined USERPROGRAMS (
+  call :Find-Directory-ByPrefix "%USERPROGRAMS%"
+)
+if %FOUND_DIR% EQU 1 goto :EOF
+
+if defined JETBRAINS_DIR (
+  call :Find-Directory-ByPrefix "%JETBRAINS_DIR%"
+)
+
+goto :EOF
+
+@REM Helper: first directory under %1 whose path ends with a name starting with SEARCH_FOLDER
+:Find-Directory-ByPrefix
+set "SEARCH_BASE=%~1"
+if not exist "%SEARCH_BASE%\" goto :EOF
+set "FOUND_TMP_DIR="
+for /d %%D in ("%SEARCH_BASE%\%SEARCH_FOLDER%*") do (
+  if not defined FOUND_TMP_DIR (
+    set "FOUND_TMP_DIR=%%~fD"
+  )
+)
+if defined FOUND_TMP_DIR (
+  set "FOUND_DIR_PATH=%FOUND_TMP_DIR%"
+  set "FOUND_DIR=1"
+  set "FOUND_TMP_DIR="
+)
 goto :EOF
 
 
 @REM ---------------------------------------------------------------------------
 @REM Function: Install-App
-@REM Usage: call :Install-App "<winget_ID>" "<Application_Name>" "<Executable_Command>" "<Program_Files_Folder_Name>"
+@REM Usage: call :Install-App "<winget_ID>" "<Application_Name>" "<Executable_Command>" "<Program_Files_Folder_Name>" [SKIP_VERIFY]
 @REM
 @REM Parameters:
 @REM   %1: The winget ID (e.g., "Git.Git").
 @REM   %2: A descriptive name for the application (e.g., "Git").
 @REM   %3: The executable command to check (e.g., "git").
-@REM   %4: The folder name to check for in Program Files (e.g., "Git").
+@REM   %4: Folder name or prefix in Program Files (e.g., "Git", "miniforge", "JetBrains").
+@REM   %5: Optional. If "SKIP_VERIFY", version verification (-version/--version/-v) is skipped.
+@REM       Use for apps that do not support these flags (e.g. AutoHotkey).
 @REM
 @REM Purpose:
 @REM   This function checks if an application is installed via winget and,
@@ -443,6 +514,7 @@ set APP_ID=%~1
 set APP_NAME=%~2
 set APP_CMD=%~3
 set PROGRAM_FOLDER=%~4
+set SKIP_VERIFY=%~5
 
 echo.
 echo.
@@ -491,6 +563,10 @@ if !ERRORLEVEL! EQU 0 (
 )
 
 :end_install_app
+@REM Skip version verification for apps that don't support -version/--version/-v (e.g. AutoHotkey)
+if /I "!SKIP_VERIFY!"=="SKIP_VERIFY" (
+  goto :end_install_app_done
+)
 "!APP_CMD!" -version >nul 2>&1
 if !ERRORLEVEL! EQU 0 (
   echo.!GREEN!Verifying !APP_NAME! installation...!RESET!
@@ -510,9 +586,9 @@ if !ERRORLEVEL! EQU 0 (
   "!APP_CMD!" -v
 )
 
+:end_install_app_done
 endlocal
 goto :EOF
-
 
 
 
@@ -751,8 +827,48 @@ call :Install-App "MinGW.MinGW" "C++ compiler (MinGW)" "g++" "MinGW"
 call :Duplicate-Make
 call :Install-App "MinGW.MinGW" "Make (MinGW)" "make" "MinGW"
 call :Install-App "Kitware.CMake" "CMake" "cmake" "CMake"
-call :Install-App "NSIS.NSIS" "NSIS (Installer Creator)" "makensis" "NSIS"
+@REM call :Install-App "NSIS.NSIS" "NSIS (Installer Creator)" "makensis" "NSIS"
+@REM call :Find-Directory "NSIS"
+@REM if %FOUND_DIR% EQU 1 call :Prompt-Path "NSIS" "\Bin"
+
 call :Install-App "MiKTeX.MiKTeX" "MiKTeX" "pdflatex" "MiKTeX"
+
+
+@REM @REM ---------------------------------------------------------------------------
+@REM @REM Platform Dependents - Windows native scripting tools
+@REM @REM ---------------------------------------------------------------------------
+@REM call :Install-App "AutoHotkey.AutoHotkey" "AutoHotkey" "AutoHotkey" "AutoHotkey" "SKIP_VERIFY"
+@REM call :Find-Directory "AutoHotkey"
+@REM if %FOUND_DIR% EQU 1 call :Prompt-Path "AutoHotkey" "\v2"
+
+@REM @REM ---------------------------------------------------------------------------
+@REM @REM Platform Independent - Python native tools
+@REM @REM ---------------------------------------------------------------------------
+@REM call :Install-App "astral-sh.uv" "uv" "uv" "uv"
+@REM call :Install-App "prefix-dev.pixi" "pixi" "pixi" "pixi"
+
+@REM call :Install-App "CondaForge.Miniforge3" "Miniforge3" "conda" "miniforge3"
+@REM call :Find-Directory "miniforge3"
+@REM if %FOUND_DIR% EQU 1 call :Prompt-Path "Miniforge3" "\Scripts"
+@REM winget uninstall CondaForge.Miniforge3
+
+
+@REM @REM ---------------------------------------------------------------------------
+@REM @REM Platform Independent - Python IDE
+@REM @REM ---------------------------------------------------------------------------
+@REM call :Install-App "JetBrains.PyCharm" "PyCharm" "" "PyCharm" "SKIP_VERIFY"
+
+
+
+@REM ---------------------------------------------------------------------------
+@REM Platform Independent - Java IDE
+@REM ---------------------------------------------------------------------------
+call :Install-App "JetBrains.IntelliJIDEA.Community" "IntelliJ IDEA Community" "" "IntelliJ IDEA" "SKIP_VERIFY"
+
+
+@REM -----------------------------
+@REM winget search <ID>
+@REM -----------------------------
 
 echo.
 echo.%GREEN%All specified applications have been processed.%RESET%
@@ -767,3 +883,19 @@ if "%REBOOT%"=="y" (
 
 pause
 exit /b 0
+
+@REM ---------------------------------------------------------------------------
+@REM Function: Prompt-Path
+@REM Usage: call :Prompt-Path "<App_Name>" "<Sub_Directory>"
+@REM
+@REM Purpose:
+@REM   Prompts the user to add a directory to their system PATH.
+@REM   Using a subroutine instead of an 'if' block avoids parsing errors
+@REM   when the directory path contains parentheses (e.g., "Program Files (x86)").
+@REM ---------------------------------------------------------------------------
+:Prompt-Path
+echo.
+echo.%YELLOW%To use %~1 from any command prompt, add the following directory to your system PATH:%RESET%
+echo.%CYAN%%FOUND_DIR_PATH%%~2%RESET%
+pause
+goto :EOF

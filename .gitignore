@@ -1,96 +1,16 @@
-# --- Generated from ./.gitignores on Fri Jan 23 04:05:15 2026 ---
+# --- Generated from ./.gitignores on Mon Jul 13 19:23:04 2026 ---
 
 #############################################
 # A.gitignore
 #############################################
-#################### ALL PURPOSE GITIGNORE ####################
-project2305*
-_*
-_*/
-tmp*/
-remote*/
-VSLive*/
-vscode*/
-pyright*/
-cursor*/
-
-################################################################
-# General Ignores (Large Media Files & Common File Types)
-################################################################ 
-# Videos (large media files)
-*.mp4
-*.avi
-*.mov
-*.mkv
-
-# Audios (large media files)
-*.mp3
-# *.wav
-# *.flac
-
-# # Images (large media files)
-# *.jpg
-# *.jpeg
-# *.png
-# *.gif
-
-
-
-
-# Microsoft Office files
-*.docx
-*.xlsx
-*.pptx
-
-
-
-
-
-################################################################
-# System Specific Ignores
-################################################################
-# Native build files 
-bin/
-obj/
-
-# IDE configurations
-.idea/
-.vs/
-.vscode/
-
-# Binary files
-[Dd]ist/
-[Dd]ists/
-[Bb]uild/
-[Bb]uilds/
-[Bb]in/
-[Ee]xt/
-
-*.exe
-*.dll
-*.lib
-
-# System files
-.DS_Store
-Thumbs.db
-*.lnk
-*.url
-# Cache files
-*.psd
-ref/
-Ruth*.pdf
-.env
-
-# Python
-venv/
-
+# Note: git check-ignore -v <ignored_file> can be used to debug which rule is ignoring a file
 #############################################
 # AL.gitignore
 #############################################
 ### AL ###
 #Template for AL projects for Dynamics 365 Business Central
 #launch.json folder
-.vscode/
+.vscode/*
 #Cache folder
 .alcache/
 #Symbols folder
@@ -118,8 +38,8 @@ bin-release/
 [Oo]bj/
 [Bb]in/
 
-# Other files and folders
-.settings/
+# # Other files and folders
+# .settings/
 
 # Executables
 *.swf
@@ -222,34 +142,65 @@ google-services.json
 #############################################
 # Angular.gitignore
 #############################################
-# Angular specific
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output (Angular specific)
+/dist
 /dist/
-/out-tsc/
+/tmp
 /tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
-.angular/
+/out-tsc
+/out-tsc/
+/bazel-out
 
 # Node modules and dependency files
+/node_modules
 /node_modules/
+yarn-error.log
 /package-lock.json
 /yarn.lock
+
+# Logs
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Environment files
 /.env
 
-# Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Miscellaneous
+/.angular/
+.angular/
+.sass-cache/
+/connect.lock
+/coverage
+/coverage/
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+/e2e/test-output/
+
+# System files
+.DS_Store
+Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Angular CLI and build artefacts
+/.angular-cli.json
+/.ng/
 
 #############################################
 # AppEngine.gitignore
@@ -629,8 +580,8 @@ files/tmp/*
 # ignore updates folder
 /updates/*
 
-# ignore sitemap.xml
-/sitemap.xml
+# # ignore sitemap.xml
+# /sitemap.xml
 
 #############################################
 # Coq.gitignore
@@ -1155,9 +1106,9 @@ resources/.arch-internal-preview.css
 *.ps
 *.mid
 *.midi
-*.mp3
+# *.mp3
 *.aif
-*.wav
+# *.wav
 # Some versions of Finale have a bug and randomly save extra copies of
 # the music source as "<Filename> copy.mus"
 *copy.mus
@@ -1739,8 +1690,8 @@ Debug/
 # IAR project "Release" directory
 Release/
 
-# IAR project settings directory
-settings/
+# # IAR project settings directory
+# settings/
 
 # IAR backup files
 Backup*
@@ -2643,7 +2594,7 @@ Reports/
 \.project
 \.settings/
 bin/lib/
-Libs/
+# Libs/
 .svn/
 .gradle
 
@@ -2702,9 +2653,9 @@ fp-info-cache
 *.dsn
 *.ses
 
-# Exported BOM files
-*.xml
-*.csv
+# # Exported BOM files
+# *.xml
+# *.csv
 
 # Archived Backups (KiCad 6.0)
 **/*-backups/*.zip
@@ -2816,11 +2767,11 @@ auth.json
 #############################################
 # Leiningen.gitignore
 #############################################
-pom.xml
-pom.xml.asc
+# pom.xml
+# pom.xml.asc
 # *.jar
 *.class
-/lib/
+# /lib/
 /classes/
 /target/
 /checkouts/
@@ -3055,8 +3006,8 @@ junit*.properties
 *.psm
 *.bak
 *.cmp
-*.jpg
-*.html
+# *.jpg
+# *.html
 *.bsf
 
 # ignore simulation output of ModelSim
@@ -3217,10 +3168,6 @@ result-*
 #############################################
 # Node.gitignore
 #############################################
-package.json
-package-lock.json
-jest/
-
 # Logs
 logs
 *.log
@@ -3582,7 +3529,7 @@ inc/
 bin/
 /db
 .eclipse
-/lib/
+# /lib/
 /logs/
 /modules
 /project/project
@@ -3766,7 +3713,7 @@ themes/default-bootstrap/modules/*/mails/*
 
 # MISC
 
-*sitemap.xml
+# *sitemap.xml
 /robots.txt
 
 # Symfony
@@ -3840,7 +3787,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -3924,14 +3871,14 @@ ipython_config.py
 #   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
 #   commonly ignored for libraries.
-# uv.lock
+uv.lock
 
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
 #   commonly ignored for libraries.
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-# poetry.lock
+poetry.lock
 # poetry.toml
 
 # pdm
@@ -3945,10 +3892,16 @@ ipython_config.py
 
 # pixi
 #   Similar to Pipfile.lock, it is generally recommended to include pixi.lock in version control.
-# pixi.lock
+pixi.lock
 #   Pixi creates a virtual environment in the .pixi directory, just like venv module creates one
 #   in the .venv directory. It is recommended not to include this directory in version control.
 .pixi
+
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -4083,7 +4036,7 @@ ui_*.h
 *.qmlc
 *.jsc
 Makefile*
-*build-*
+# *build-*
 *.qm
 *.prl
 
@@ -4168,7 +4121,7 @@ devel/
 logs/
 build/
 bin/
-lib/
+# lib/
 msg_gen/
 srv_gen/
 msg/*Action.msg
@@ -4315,7 +4268,7 @@ lib/.precomp
 # ReScript.gitignore
 #############################################
 /node_modules/
-/lib/
+# /lib/
 .bsb.lock
 
 #############################################
@@ -4847,9 +4800,9 @@ install-log.txt
 *.xdv
 *-converted-to.*
 # these rules might exclude image files for figures etc.
-# *.ps
-# *.eps
-# *.pdf
+*.ps
+*.eps
+*.pdf
 
 ## Generated if empty string is given at "Please type another file name for output:"
 .pdf
@@ -5994,14 +5947,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# VS Code files for those working on multiple tools
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-
 # Local History for Visual Studio Code
 .history/
 
@@ -6084,7 +6029,7 @@ wp-config.php
 #############################################
 # Xojo (formerly REALbasic and Real Studio)
 
-Builds*
+# Builds*
 *.debug
 *.debug.app
 Debug*.exe
@@ -6113,6 +6058,135 @@ protected/runtime/*
 !protected/runtime/.gitignore
 protected/data/*.db
 themes/classic/views/
+
+#############################################
+# ZYXcustom.gitignore
+#############################################
+#################### ALL PURPOSE GITIGNORE ####################
+project2305*
+_*
+tmp*/
+remote*/
+VSLive*/
+vscode*/
+pyright*/
+python-lang*/
+*.key
+*.key.pub
+log*/
+playwright*/
+h2/
+
+################################################################
+# General Ignores (Large Media Files & Common File Types)
+################################################################ 
+# Videos (large media files)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Audios (large media files)
+# *.mp3
+# *.wav
+# *.flac
+
+# # Images (large media files)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+
+# Microsoft Office files
+*.docx
+*.xlsx
+*.pptx
+
+################################################################
+# System Specific Ignores
+################################################################
+# Native build files 
+bin/
+obj/
+
+# IDE configurations
+.idea/*
+.vs/*
+.vscode/*
+
+# Binary files
+[Dd]ist/
+[Dd]ists/
+[Bb]uild/
+[Bb]uilds/
+[Bb]in/
+[Ee]xt/
+
+
+*.[Dd][Oo][Cc]
+
+*.exe
+*.dll
+*.lib
+
+# System files
+.DS_Store
+Thumbs.db
+*.lnk
+*.url
+# Cache files
+*.psd
+ref/
+Ruth*.pdf
+.env
+
+
+
+
+
+################################################################
+# AI Model Specific Ignores
+################################################################ 
+# Gemini (Google's AI model)
+*[gG][eE][mM][iI][nN][iI]*
+# Cursor IDE
+*[cC][uU][rR][sS][oO][rR]*
+# Copilot (GitHub's AI code assistant)
+*[cC][oO][pP][iI][lL][oO][tT]*
+# Antigravity
+*[aA][nN][tT][iI][gG][rR][aA][vV][iI][tT][yY]*
+# Agents (General)
+*[aA][gG][eE][nN][tT][sS]*
+# Kiro (AI code assistant)
+*[kK][iI][rR][oO]*
+
+## [Kiro] for project specific specs
+!/.kiro/
+/.kiro/*
+!/.kiro/specs/
+!.config.kiro
+!/.kiro/steering/
+# CI/CD convention for personal configurations
+/.kiro/steering/plan-*
+/.kiro/steering/code-*
+/.kiro/steering/build-*
+/.kiro/steering/test-*
+/.kiro/steering/release-*
+/.kiro/steering/deploy-*
+/.kiro/steering/operate-*
+/.kiro/steering/monitor-*
+# Educational Purposed configurations
+/.kiro/steering/edu-*
+
+## [Visual Studio Code]
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+!.vscode/*.code-snippets
+.history/*
 
 #############################################
 # ZendFramework.gitignore
@@ -6227,7 +6301,7 @@ TestReports
 
 # Report generators and templates
 #   * if you want to provide (f.e.) your own report generators exclude the directory here and ignore only the unnecessary subdirectories
-Templates
+# Templates
 
 # optional, default for external Python libraries
 PyLibs
