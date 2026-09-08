@@ -292,9 +292,9 @@ if /I "!SKIP_VERIFY!"=="SKIP_VERIFY" goto :end_install_app_done
 if not defined APP_CMD goto :end_install_app_done
 
 echo.%GREEN%Verifying installation...%RESET%
-call "!APP_CMD!" --version >nul 2>&1 && (echo.!GREEN!!APP_NAME! --version:!RESET! & call "!APP_CMD!" --version)
-call "!APP_CMD!" -version >nul 2>&1 && (echo.!GREEN!!APP_NAME! -version:!RESET! & call "!APP_CMD!" -version)
-call "!APP_CMD!" -v >nul 2>&1 && (echo.!GREEN!!APP_NAME! -v:!RESET! & call "!APP_CMD!" -v)
+call "!APP_CMD!" --version <nul >nul 2>&1 && (echo.!GREEN!!APP_NAME! --version:!RESET! & call "!APP_CMD!" --version <nul)
+call "!APP_CMD!" -version <nul >nul 2>&1 && (echo.!GREEN!!APP_NAME! -version:!RESET! & call "!APP_CMD!" -version <nul)
+call "!APP_CMD!" -v <nul >nul 2>&1 && (echo.!GREEN!!APP_NAME! -v:!RESET! & call "!APP_CMD!" -v <nul)
 
 :end_install_app_done
 if defined _TEMP_REBOOT (
@@ -401,6 +401,67 @@ echo.%CYAN%%FOUND_DIR_PATH%%~2%RESET%
 pause
 goto :EOF
 
+@REM ---------------------------------------------------------------------------
+@REM Function: Install-Exe-Installer
+@REM ---------------------------------------------------------------------------
+:Install-Exe-Installer
+setlocal EnableDelayedExpansion
+set "APP_NAME=%~1"
+set "APP_CMD=%~2"
+set "URL_X64=%~3"
+set "URL_ARM64=%~4"
+set "INSTALL_ARGS=%~5"
+
+echo.
+echo.%CYAN%=========================================================%RESET%
+echo.Checking for !YELLOW!!APP_NAME!!RESET!...
+
+where "!APP_CMD!" >nul 2>&1 && (
+  echo.!YELLOW!!APP_NAME!!RESET! is !GREEN!already installed - command check!RESET!.
+  goto :end_exe_install
+)
+
+set "DOWNLOAD_URL="
+if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
+    set "DOWNLOAD_URL=!URL_ARM64!"
+) else (
+    set "DOWNLOAD_URL=!URL_X64!"
+)
+
+if "!DOWNLOAD_URL!"=="" (
+    echo.!RED!No installer URL provided for architecture %PROCESSOR_ARCHITECTURE% for !APP_NAME!.!RESET!
+    goto :end_exe_install
+)
+
+echo.!YELLOW!!APP_NAME! not found. Downloading installer from !DOWNLOAD_URL!...!RESET!
+curl -s -L -o "%~dp0installer_!APP_CMD!.exe" "!DOWNLOAD_URL!"
+
+echo.!YELLOW!Running installer silently...!RESET!
+start /wait "" "%~dp0installer_!APP_CMD!.exe" !INSTALL_ARGS!
+
+if !ERRORLEVEL! EQU 0 (
+  echo.!GREEN!!APP_NAME! was installed successfully.!RESET!
+  echo.Remove the installer file: "%~dp0installer_!APP_CMD!.exe"
+  del "%~dp0installer_!APP_CMD!.exe"
+) else (
+  echo.!RED!Installation of !APP_NAME! failed.!RESET!
+  echo.!YELLOW!Run the installer manually: "%~dp0installer_!APP_CMD!.exe"!RESET!
+  echo.!YELLOW!After installation, delete the installer file manually then proceed.!RESET!
+  pause
+)
+
+:end_exe_install
+if not defined APP_CMD goto :end_exe_install_done
+
+echo.%GREEN%Verifying installation...%RESET%
+call "!APP_CMD!" --version <nul >nul 2>&1 && (echo.!GREEN!!APP_NAME! --version:!RESET! & call "!APP_CMD!" --version <nul)
+call "!APP_CMD!" -version <nul >nul 2>&1 && (echo.!GREEN!!APP_NAME! -version:!RESET! & call "!APP_CMD!" -version <nul)
+call "!APP_CMD!" -v <nul >nul 2>&1 && (echo.!GREEN!!APP_NAME! -v:!RESET! & call "!APP_CMD!" -v <nul)
+
+:end_exe_install_done
+endlocal
+goto :EOF
+
 @REM ===========================================================================
 :main
 @REM ===========================================================================
@@ -458,22 +519,31 @@ call :Install-App "Docker.DockerDesktop" "Docker Desktop" "docker" "Docker"
 @REM ---------------------------------------------------------------------------
 echo.%CYAN%========================================================= Natives Dev%RESET%
 pause
-call :Install-App "StrawberryPerl.StrawberryPerl" "Strawberry Perl" "perl" "Strawberry"
+@REM C/C++ (Depending on the localhost architecture)
 call :Install-App "MinGW.MinGW" "C compiler (MinGW)" "gcc" "MinGW"
 call :Install-App "MinGW.MinGW" "C++ compiler (MinGW)" "g++" "MinGW"
-call :Duplicate-Make
 call :Install-App "MinGW.MinGW" "Make (MinGW)" "make" "MinGW"
 call :Install-App "Kitware.CMake" "CMake" "cmake" "CMake"
 call :Install-App "NSIS.NSIS" "NSIS (Installer Creator)" "makensis" "NSIS"
-
 call :Find-Directory "NSIS"
 if %FOUND_DIR% EQU 1 call :Prompt-Path "NSIS" "\Bin"
-
-call :Install-App "MiKTeX.MiKTeX" "MiKTeX" "pdflatex" "MiKTeX"
-call :Install-App "AutoHotkey.AutoHotkey" "AutoHotkey" "AutoHotkey" "AutoHotkey" "SKIP_VERIFY"
+@REM Perl with x86_64 Architecture-based C/C++
+call :Install-App "StrawberryPerl.StrawberryPerl" "Strawberry Perl" "perl" "Strawberry"
+call :Duplicate-Make
+@REM NodeJS
 call :Install-App "OpenJS.NodeJS.LTS" "Node.js (LTS)" "node" "nodejs"
+@REM Python
 call :Install-App "astral-sh.uv" "uv" "uv" "uv"
 call :Install-App "prefix-dev.pixi" "pixi" "pixi" "pixi"
+@REM Golang
+call :Install-App "GoLang.Go" "Go" "go" ""
+call :Install-App "Graphviz.Graphviz" "Graphviz" "dot" "Graphviz"
+call :Find-Directory "Graphviz"
+if %FOUND_DIR% EQU 1 call :Prompt-Path "Graphviz" "\bin"
+@REM Latex Typesetting System
+call :Install-App "MiKTeX.MiKTeX" "MiKTeX" "pdflatex" "MiKTeX"
+@REM Scripting/Automation
+call :Install-App "AutoHotkey.AutoHotkey" "AutoHotkey" "AutoHotkey" "AutoHotkey" "SKIP_VERIFY"
 
 @REM ---------------------------------------------------------------------------
 @REM Platform Independent - IDEs & Development Tools
@@ -487,6 +557,8 @@ call :Install-App "Anysphere.Cursor" "Cursor" "" "Cursor" "SKIP_VERIFY"
 call :Install-App "Google.AntigravityIDE" "Antigravity IDE" "" "Antigravity" "SKIP_VERIFY"
 call :Install-App "Postman.Postman" "Postman" "" "Postman" "SKIP_VERIFY"
 call :Install-App "DBeaver.DBeaver.Community" "DBeaver" "" "DBeaver" "SKIP_VERIFY"
+@REM dbvr (DBeaver CLI)
+call :Install-Exe-Installer "dbvr (DBeaver CLI)" "dbvr" "https://dbeaver.io/files/dbvr-ce-latest-windows-x86_64.exe" "https://dbeaver.io/files/dbvr-ce-latest-windows-aarch64.exe" "/S"
 @REM Install and Update Visual C++ Redistributable 2015+ (both x64 and x86)
 call :Install-App "Microsoft.VCRedist.2015+.x64" "Visual C++ Redistributable 2015+ (x64)" "" "" "SKIP_VERIFY" "REQUIRE_REBOOT"
 call :Update-VCRedist "Microsoft.VCRedist.2015+.x64" "Visual C++ Redistributable 2015+ (x64)" "REQUIRE_REBOOT"
