@@ -1,0 +1,400 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `ProvisioningException`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280719874
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280737615
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280968576
+      }
+    ],
+    "2.1 Create `PluginId` enum": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280720636
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280739155
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280969950
+      }
+    ],
+    "2.2 Create `RecognitionPatterns` and `RecognitionResult` records": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280721411
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280978749
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281291383
+      }
+    ],
+    "3.1 Create `DownloadConfig`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280721831
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280979778
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281289582
+      }
+    ],
+    "4.1 Add name-parameterized overloads to `RuntimeDirectory`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280722296
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280740916
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280971353
+      }
+    ],
+    "5.1 Create `JarRecognizer`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280722699
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281311084
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281406990
+      }
+    ],
+    "6.1 Create the `Downloader` interface": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280723055
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281311851
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281408126
+      }
+    ],
+    "6.2 Implement `HttpDownloader`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280723400
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281412192
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281571529
+      }
+    ],
+    "7.1 Implement staging resolution and wipe/recreate": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280723747
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281413548
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281572785
+      }
+    ],
+    "7.6 Implement download-recognize-verify-inject pipeline in `provision()`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280724261
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281580547
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281809516
+      }
+    ],
+    "8. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280724733
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789282001261
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789282805475
+      }
+    ],
+    "9.1 Narrow `ServerLoader`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280725306
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281414912
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281574195
+      }
+    ],
+    "9.3 Retire `PluginsLoader` classpath-copy": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280725777
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281416427
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281575351
+      }
+    ],
+    "10.1 Load config first and thread provisioning into `App.main`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280726374
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281810600
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281995960
+      }
+    ],
+    "12.1 Create `download.properties`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280726801
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280741822
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280972762
+      }
+    ],
+    "12.2 Delete bundled jars from resources": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280727462
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280743105
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280973865
+      }
+    ],
+    "13. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280727975
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789282953399
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789283097513
+      }
+    ],
+    "14.1 Update `product.md`, `structure.md`, `tech.md`": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280728330
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789282806638
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789282952067
+      }
+    ],
+    "15. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280728708
+      },
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789283098967
+      }
+    ],
+    "1. Add the ProvisioningException type": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280968984
+      }
+    ],
+    "4. Modify RuntimeDirectory with additive, backward-compatible overloads": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280971598
+      }
+    ],
+    "12. Replace bundled resources with the Download Config": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789280974167
+      }
+    ],
+    "3. Implement the Download Config loader": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281289851
+      }
+    ],
+    "2. Define recognition and plugin-identity types": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281291607
+      }
+    ],
+    "5. Implement the pure JarRecognizer": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281407239
+      }
+    ],
+    "6. Implement the Downloader seam and HttpDownloader": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281571843
+      }
+    ],
+    "9. Narrow ServerLoader and retire PluginsLoader": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281575625
+      }
+    ],
+    "7. Implement the ResourceProvisioner orchestration": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281809832
+      }
+    ],
+    "10. Wire provisioning into App": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789281996204
+      }
+    ],
+    "14. Update steering documentation for dynamic provisioning": [
+      {
+        "executionId": "809cba58-a15a-49d9-b6ce-7f006f44c5e0",
+        "chatSessionId": "sess_5fb95675-dbd0-4e54-a5fa-6689b7345c8b",
+        "timestamp": 1789282952290
+      }
+    ]
+  }
+}

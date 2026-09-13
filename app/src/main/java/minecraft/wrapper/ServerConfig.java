@@ -1,9 +1,11 @@
 package minecraft.wrapper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -32,8 +34,10 @@ public class ServerConfig {
      * Use this before applying changes to preserve existing user settings.
      */
     public void load() {
-        if (file.exists()) {
-            try (FileInputStream in = new FileInputStream(file)) {
+        Path path = file.toPath();                              // NIO
+        // A missing file leaves properties empty, matching prior behavior.
+        if (Files.exists(path)) {                               // NIO
+            try (InputStream in = Files.newInputStream(path)) { // NIO
                 properties.load(in);
             } catch (IOException e) {
                 System.err.println("Config: Failed to load server.properties: " + e.getMessage());
@@ -88,7 +92,8 @@ public class ServerConfig {
      * Persists the current state of properties to disk.
      */
     public void save() {
-        try (FileOutputStream out = new FileOutputStream(file)) {
+        Path path = file.toPath();                                // NIO
+        try (OutputStream out = Files.newOutputStream(path)) {    // NIO
             properties.store(out, "Minecraft server properties");
         } catch (IOException e) {
             System.err.println("Config: Failed to save server.properties: " + e.getMessage());

@@ -7,7 +7,7 @@ inclusion: always
 ## Language and runtime
 
 - Java is the implementation language. The Gradle toolchain pins the language version to Java 21, which is also the minimum required by modern Minecraft server versions (1.20.5 and later). New Java code targets Java 21 and existing standard-library patterns are preferred over new dependencies.
-- The wrapper spawns the actual Minecraft server as a separate child JVM process. It locates the `java` executable under `java.home`, adjusting the binary name per operating system, and launches the server jar with fixed heap flags. This child-process model is central and must be preserved when the runtime is touched.
+- The wrapper spawns the actual Minecraft server as a separate child JVM process. It locates the `java` executable under `java.home`, adjusting the binary name per operating system, and launches the server jar with fixed heap flags. The child process runs with its working directory set to the Base Runtime Directory, resolved per-OS to `<user.home>/mclovers` rather than a CWD-relative location, so all server-generated files land there. This child-process model is central and must be preserved when the runtime is touched.
 
 ## Build system
 
@@ -20,7 +20,7 @@ inclusion: always
 
 - Run the test suite with `./gradlew test`.
 - Build a native application image for the current operating system with `./gradlew jpackage`. This depends on `installDist`, runs `jpackage` in `app-image` mode, and then patches a real `java` executable back into the bundled runtime because the wrapper must spawn a child JVM.
-- Clean with `./gradlew clean`. The clean task is extended to remove the `dist` output, IDE `bin` output, and the `minecraft_server` runtime directory, with extra handling for files that Windows tends to lock.
+- Clean with `./gradlew clean`. The clean task is extended to remove the `dist` output and IDE `bin` output, with extra handling for files that Windows tends to lock. The Base Runtime Directory now lives under the user home (`<user.home>/mclovers`) rather than the project area, so it is outside the scope of the clean task.
 
 ## Dependencies
 
@@ -32,16 +32,16 @@ inclusion: always
 - `jpackage` produces portable `app-image` bundles, named `mc-lovers`, with a low wrapper heap so the wrapper itself stays lightweight.
 - Because `jpackage` strips the JDK launcher from its trimmed runtime, the build copies the platform `java` binary into the bundle at the correct per-OS runtime path and sets the executable bit on Unix systems. Any change to packaging must keep a working `java` binary inside the bundle, otherwise child-process launching breaks.
 
-## Bundled server and plugins
+## Server and plugins
 
-The following third-party artifacts are shipped inside the wrapper as classpath resources and are not built from source here.
+The following third-party artifacts are obtained over the internet on every run rather than shipped inside the wrapper as classpath resources, and are not built from source here. Their download URLs and filename recognition patterns come from the bundled `download.properties` Download Config.
 
-- A Minecraft server jar used as `server.jar` at runtime. A performance-oriented flavor is used rather than vanilla, because plugin support, secure proxying, and low-RAM operation are required. Several candidate server jars are kept under resources.
+- A Minecraft server jar. A performance-oriented flavor is used rather than vanilla, because plugin support, secure proxying, and low-RAM operation are required. Downloading the latest jar each run keeps the server matched to current clients without a rebuild.
 - Geyser for Spigot, which lets Bedrock clients join the Java server.
 - Floodgate for Spigot, which lets Bedrock players connect without a paid Java account.
 - ViaVersion and ViaBackwards, which broaden the range of client versions that can connect.
 
-Plugin resources are validated at startup. When any expected resource is missing from the classpath, a report with official download links is printed and startup fails, which signals that the resource must be placed under `app/src/main/resources/plugins/` and the project rebuilt.
+Provisioning fails fast. When it cannot complete, startup halts with an error indication and a non-zero exit, and no child process is launched. This covers a missing or invalid Download Config, an unreachable download source, a failed or truncated download, and a downloaded artifact that cannot be recognized, so nothing stale is ever executed.
 
 ## Configuration model
 

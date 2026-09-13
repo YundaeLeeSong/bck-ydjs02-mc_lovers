@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
@@ -33,11 +34,16 @@ public class GeyserConfig {
      * @throws IOException If file operations fail.
      */
     public void configure() throws IOException {
-        File pluginsDir = new File(serverDir, "plugins");
-        File geyserDir = new File(pluginsDir, "Geyser-Spigot");
-        File configFile = new File(geyserDir, "config.yml");
-        
-        if (configFile.exists()) {
+        // NIO path join
+        //
+        // serverDir.toPath().resolve(...) joins each segment without a hardcoded
+        // platform separator, so the config path stays correct on every OS.
+        Path configFile = serverDir.toPath()          // base
+                .resolve("plugins")                    // plugins
+                .resolve("Geyser-Spigot")              // Geyser-Spigot
+                .resolve("config.yml");                // config.yml
+
+        if (Files.exists(configFile)) {
             updateExistingConfig(configFile);
         } else {
             System.out.println("Config: Geyser config.yml not found. Skipping configuration (assuming fresh install waiting for first run).");
@@ -50,8 +56,8 @@ public class GeyserConfig {
      * @param file The configuration file to update.
      * @throws IOException If reading or writing fails.
      */
-    private void updateExistingConfig(File file) throws IOException {
-        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+    private void updateExistingConfig(Path file) throws IOException {
+        String content = Files.readString(file, StandardCharsets.UTF_8);
         String newContent = content;
         boolean changed = false;
         
@@ -74,7 +80,7 @@ public class GeyserConfig {
         }
         
         if (changed && !newContent.equals(content)) {
-            Files.writeString(file.toPath(), newContent, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(file, newContent, StandardOpenOption.TRUNCATE_EXISTING);
             System.out.println("Config: Updated Geyser config.yml (MTU set to 1200, auth-type set to floodgate).");
         }
     }

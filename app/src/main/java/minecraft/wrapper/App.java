@@ -1,6 +1,7 @@
 package minecraft.wrapper;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * <b>Application Entry Point</b>
@@ -12,8 +13,14 @@ import java.io.File;
  */
 public class App {
 
-    private static final String SERVER_DIR_NAME = "minecraft_server";
-    private static final String SERVER_JAR_NAME = "server.jar";
+    /*
+     * [Past version]
+     * private static final String SERVER_JAR_NAME = "server.jar";  // server jar literal
+     *
+     * The server jar name is no longer a compiled literal. The Resource_Provisioner
+     * downloads the versioned server jar and returns its Original_Filename at
+     * runtime, which is threaded into ServerRunner instead.
+     */
     private static final String EULA_FILE_NAME = "eula.txt";
 
     /**
@@ -22,21 +29,52 @@ public class App {
      * @param args Command line arguments (unused).
      */
     public static void main(String[] args) {
-        File serverDir = new File(SERVER_DIR_NAME);
-        
         try {
             System.out.println("=== Wrapper: Initialization ===");
 
+            /*
+             * [Download Config]
+             *
+             * Load and validate the bundled Download Config first, before Phase 0. A
+             * missing resource, malformed properties, or an absent/blank required key
+             * throws ProvisioningException here, which the top-level catch below turns
+             * into an actionable message and a non-zero exit before any directory is
+             * created or any download is attempted. The config is the single source of
+             * truth for the runtime directory names, URLs, and recognition patterns.
+             */
+            DownloadConfig cfg = DownloadConfig.load("download.properties"); // config
+
+            /*
+             * [Phase 0: Base Runtime Directory]
+             *
+             * Resolve, create, and validate the per-OS Base Runtime Directory at
+             * <user.home>/<cfg.baseDirName()> before any provisioning. This establishes
+             * a stable absolute root regardless of the process current working directory.
+             * A failure throws RuntimeDirectoryException, which the top-level catch below
+             * turns into a clear message and a non-zero exit with nothing provisioned.
+             */
+            Path base = RuntimeDirectory.resolveAndPrepare(cfg.baseDirName()); // Phase 0
+            File serverDir = base.toFile();                            // resolved base
+
+            /*
+             * [Provisioning]
+             *
+             * Download the versioned server jar and the four required plugin jars into
+             * the Staging Directory, recognize them by version-tagged filename, and inject
+             * them into the base under their Original_Filename. The returned name is the
+             * server jar's Original_Filename, threaded into ServerRunner as the launch jar.
+             * A failure throws ProvisioningException, handled by the top-level catch below.
+             */
+            ResourceProvisioner provisioner =
+                    new ResourceProvisioner(base, cfg, new HttpDownloader()); // provisioner
+            String serverJarName = provisioner.provision();            // injected jar name
+
             // --- Phase 1: Installation (Loaders) ---
-            // 1. Server Jar
-            ServerLoader serverLoader = new ServerLoader(serverDir, SERVER_JAR_NAME, EULA_FILE_NAME);
+            // Directory + EULA only; jar extraction and plugin install moved to provisioning.
+            ServerLoader serverLoader = new ServerLoader(serverDir, EULA_FILE_NAME);
             serverLoader.install();
 
-            // 2. Plugins
-            PluginsLoader pluginsLoader = new PluginsLoader(serverDir);
-            pluginsLoader.install();
-            
-            ServerRunner serverRunner = ServerRunner.getInstance(serverDir, SERVER_JAR_NAME);
+            ServerRunner serverRunner = ServerRunner.getInstance(serverDir, serverJarName);
             
             // Register centralized Shutdown Hook for cleanup
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -132,6 +170,33 @@ public class App {
             // Explicit exit calls the shutdown hook naturally
             System.exit(exitCode);
 
+        } catch (ProvisioningException e) {
+            /*
+             * [Provisioning failure]
+             *
+             * Config load, staging, download, recognition, verification, or injection
+             * failed. Print an actionable message (naming the offending path when one
+             * applies) and exit non-zero. Placed before the RuntimeDirectoryException
+             * handler because config load runs before Phase 0.
+             */
+            Path failedPath = e.getPath();
+            if (failedPath != null) {
+                System.err.println("Wrapper Error [Provisioning]: " + e.getMessage()
+                        + " (path: " + failedPath + ")");
+            } else {
+                System.err.println("Wrapper Error [Provisioning]: " + e.getMessage());
+            }
+            System.exit(1);
+        } catch (RuntimeDirectoryException e) {
+            // [Phase 0 failure] name the base directory or missing user home, then exit non-zero.
+            Path failedPath = e.getPath();
+            if (failedPath != null) {
+                System.err.println("Wrapper Error [Base Directory]: " + e.getMessage()
+                        + " (path: " + failedPath + ")");
+            } else {
+                System.err.println("Wrapper Error [Base Directory]: " + e.getMessage());
+            }
+            System.exit(1);
         } catch (Exception e) {
             System.err.println("Wrapper Error [Critical]: " + e.getMessage());
             e.printStackTrace();

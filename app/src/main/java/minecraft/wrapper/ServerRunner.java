@@ -6,10 +6,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 /**
  * Manages the lifecycle of the Minecraft Server process.
@@ -69,7 +70,9 @@ public class ServerRunner {
     public void generateConfigs() throws IOException, InterruptedException {
         synchronized (lock) {
             System.out.println("Runner: Starting Shadow Run to generate configurations...");
-            
+
+            ensureLaunchReady();
+
             List<String> commands = buildJavaCommand(false); // Force nogui for shadow run
             ProcessBuilder pb = new ProcessBuilder(commands);
             pb.directory(workingDir);
@@ -133,6 +136,8 @@ public class ServerRunner {
      */
     public int execute(boolean enableGui) throws IOException, InterruptedException {
         synchronized (lock) {
+            ensureLaunchReady();
+
             List<String> commands = buildJavaCommand(enableGui);
 
             System.out.println("Runner: Launching Server...");
@@ -194,6 +199,28 @@ public class ServerRunner {
                 handle.destroyForcibly();
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    /**
+     * Verifies the launch preconditions before spawning the child JVM.
+     * <p>
+     * The working directory is the resolved base runtime directory. Launching
+     * is refused when that directory is missing or the server jar is absent
+     * under it, so the failure names the offending path instead of surfacing
+     * as an opaque process-start error.
+     * </p>
+     *
+     * @throws IOException If the base directory or the server jar is missing.
+     */
+    private void ensureLaunchReady() throws IOException {
+        Path base = workingDir.toPath();
+        if (!Files.isDirectory(base)) {
+            throw new IOException("Runner: working directory is missing: " + base.toAbsolutePath());
+        }
+        Path jar = base.resolve(jarName);
+        if (!Files.exists(jar)) {
+            throw new IOException("Runner: server jar is missing: " + jar.toAbsolutePath());
         }
     }
 

@@ -38,7 +38,9 @@ Requires Java 21+ and Gradle.
 ```bash
 # To run
 ./gradlew clean run
+```
 
+```bash
 # To distribute
 ./gradlew clean jpackage
 ```

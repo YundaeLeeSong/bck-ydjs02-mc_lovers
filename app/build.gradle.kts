@@ -144,16 +144,17 @@ tasks.named("clean") {
         val distDir = layout.buildDirectory.dir("dist").get().asFile
         if (distDir.exists()) {
             println("Cleaning distribution directory: $distDir")
-            val isWindows = System.getProperty("os.name").lowercase().contains("win")
+            /*
+             * [Past version]
+             * if (isWindows) { exec { commandLine("cmd","/c","rmdir","/s","/q",..) } } // force delete
+             *
+             * Gradle 9 removed Project.exec {} from this configuration context, so the
+             * Windows-only rmdir force-delete no longer compiles. The recursive JVM
+             * delete below already removes the tree cross-platform and reports a warning
+             * if any file is locked, so the external rmdir was redundant and is dropped.
+             */
             try {
-                if (isWindows) {
-                    // Try forced delete on Windows
-                    exec {
-                        commandLine("cmd", "/c", "rmdir", "/s", "/q", distDir.absolutePath)
-                        isIgnoreExitValue = true
-                    }
-                }
-                if (distDir.exists() && !distDir.deleteRecursively()) {
+                if (distDir.exists() && !distDir.deleteRecursively()) {  // recursive delete
                      println("WARNING: Failed to fully delete 'dist'. Files might be locked.")
                 }
             } catch (e: Exception) {
