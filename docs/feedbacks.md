@@ -6,31 +6,9 @@ High-level architecture (mental model)
 
 You are building a content illusion system, not real blocks.
 
-Paper Server
-├─ Core Gameplay Plugin (your code)
-│   ├─ Custom item system
-│   ├─ Fake block / furniture system
-│   ├─ Entity-based animals & fish
-│   ├─ Interaction engine (click/sneak/etc.)
-│   └─ GUI framework
-│
-├─ Resource Pack (mandatory)
-│   ├─ Textures
-│   ├─ Models
-│   ├─ Sounds
-│   └─ Fonts
-│
-├─ Geyser + Floodgate
-│   └─ Bedrock forms / UI mapping
-│
-└─ Optional helper plugins
-    ├─ ProtocolLib
-    ├─ Citizens
-    ├─ ItemsAdder-like concepts (you reimplement)
-    └─ ModelEngine-like concepts
+Paper Server ├─ Core Gameplay Plugin (your code) │ ├─ Custom item system │ ├─ Fake block / furniture system │ ├─ Entity-based animals & fish │ ├─ Interaction engine (click/sneak/etc.) │ └─ GUI framework │ ├─ Resource Pack (mandatory) │ ├─ Textures │ ├─ Models │ ├─ Sounds │ └─ Fonts │ ├─ Geyser + Floodgate │ └─ Bedrock forms / UI mapping │ └─ Optional helper plugins ├─ ProtocolLib ├─ Citizens ├─ ItemsAdder-like concepts (you reimplement) └─ ModelEngine-like concepts
 
-Core methodology (IMPORTANT)
-Rule #1: Server owns logic, client owns visuals
+Core methodology (IMPORTANT) Rule #1: Server owns logic, client owns visuals
 
 Server decides what happens
 
@@ -40,8 +18,7 @@ Client stays vanilla
 
 Everything you build follows this.
 
-Step-by-step implementation plan
-PHASE 1 — Resource Pack (do this FIRST)
+Step-by-step implementation plan PHASE 1 — Resource Pack (do this FIRST)
 
 Everything else depends on this.
 
@@ -69,11 +46,7 @@ Item-based models (stick, carrot_on_a_stick, paper)
 
 Block-model-with-entity illusion (via item frames or entities)
 
-Folder focus
-assets/minecraft/models/item/
-assets/minecraft/textures/
-assets/minecraft/font/
-assets/minecraft/sounds.json
+Folder focus assets/minecraft/models/item/ assets/minecraft/textures/ assets/minecraft/font/ assets/minecraft/sounds.json
 
 Server enforcement
 
@@ -91,12 +64,7 @@ Design
 
 Create a wrapper class:
 
-class CustomItem {
-  String id;
-  Material baseMaterial;
-  int customModelData;
-  Consumer<PlayerInteractEvent> onUse;
-}
+class CustomItem { String id; Material baseMaterial; int customModelData; Consumer<PlayerInteractEvent> onUse; }
 
 Implementation
 
@@ -118,8 +86,7 @@ Machine items
 
 This replaces “mod items”.
 
-PHASE 3 — Fake blocks & furniture
-Techniques
+PHASE 3 — Fake blocks & furniture Techniques
 
 Choose based on complexity:
 
@@ -155,8 +122,7 @@ Lamps
 
 Aquariums
 
-PHASE 4 — Animals & fish
-How this works
+PHASE 4 — Animals & fish How this works
 
 Use vanilla mobs
 
@@ -184,11 +150,7 @@ Animals
 
 Variant system:
 
-enum AnimalVariant {
-  RED_FOX,
-  WHITE_FOX,
-  BLUE_FOX
-}
+enum AnimalVariant { RED_FOX, WHITE_FOX, BLUE_FOX }
 
 Behavior
 
@@ -202,8 +164,7 @@ PHASE 5 — Fake machines
 
 This is where Paper shines.
 
-Machine = state machine
-IDLE -> PROCESSING -> OUTPUT
+Machine = state machine IDLE -> PROCESSING -> OUTPUT
 
 Example machine
 
@@ -235,8 +196,7 @@ Scheduled tasks
 
 Cancel vanilla block interaction
 
-PHASE 6 — GUI framework
-Java (Paper)
+PHASE 6 — GUI framework Java (Paper)
 
 Inventory GUIs
 
@@ -254,13 +214,9 @@ Map GUIs to forms where possible
 
 Fallback inventory GUIs if needed
 
-Abstraction idea
-interface Menu {
-  void open(Player p);
-}
+Abstraction idea interface Menu { void open(Player p); }
 
-PHASE 7 — Input & interaction engine
-Inputs you CAN use
+PHASE 7 — Input & interaction engine Inputs you CAN use
 
 Right click
 
@@ -286,8 +242,7 @@ Cancel interaction events
 
 Replace behavior fully
 
-PHASE 8 — Fonts & polish
-Custom fonts
+PHASE 8 — Fonts & polish Custom fonts
 
 Unicode private range
 
@@ -307,8 +262,7 @@ Fish splashes
 
 UI feedback
 
-Tech stack recommendations
-Libraries / APIs
+Tech stack recommendations Libraries / APIs
 
 Paper API (obvious)
 
@@ -328,8 +282,7 @@ YAML for config
 
 JSON for content definitions
 
-Development strategy (very important)
-Start small
+Development strategy (very important) Start small
 
 One custom item
 
@@ -348,12 +301,14 @@ Reusable systems
 Content packs without recompiling
 
 This works perfectly since my goals are
+
 1. Zero client setup
 2. Java + Bedrock compatibility
 3. Stability
 4. Hosting at scale
 
 and I do not need
+
 1. Real new blocks
 2. True modded gameplay
 3. Client performance boosts

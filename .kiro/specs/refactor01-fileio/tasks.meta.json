@@ -1,0 +1,248 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Implement `RuntimeDirectoryException`": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276215711
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276225112
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276343828
+      }
+    ],
+    "1.2 Implement `RuntimeDirectory` with `resolve(String userHome)` and `resolveAndPrepare()`": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276216351
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276348383
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276586543
+      }
+    ],
+    "2.1 Convert `ServerLoader` file operations to NIO": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276216992
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276349820
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276587808
+      }
+    ],
+    "3.1 Convert `PluginsLoader` file operations to NIO and preserve all-or-nothing behavior": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276217258
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276351209
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276589231
+      }
+    ],
+    "4.1 Convert `ServerConfig` load/save to NIO streams": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276217513
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276352682
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276590625
+      }
+    ],
+    "5.1 Convert `GeyserConfig` path joining to `Path.resolve` and keep in-place edit": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276217765
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276353993
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276591995
+      }
+    ],
+    "6.1 Root ServerRunner working directory at the base and add launch guard": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276217976
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276596322
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276747946
+      }
+    ],
+    "7. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276218209
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276759806
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276814071
+      }
+    ],
+    "8.1 Add Phase 0 resolution and thread the resolved base directory": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276218395
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276819541
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276898869
+      }
+    ],
+    "9.1 Update `product.md`, `structure.md`, and `tech.md`": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276218618
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276902807
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276970160
+      }
+    ],
+    "10. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276218856
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276974161
+      },
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789277030514
+      }
+    ],
+    "1. Create the RuntimeDirectory component and its exception": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276586728
+      }
+    ],
+    "2. Migrate ServerLoader to NIO under the base directory": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276588026
+      }
+    ],
+    "3. Migrate PluginsLoader to NIO under the base directory": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276589367
+      }
+    ],
+    "4. Migrate ServerConfig I/O to NIO streams": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276590837
+      }
+    ],
+    "5. Migrate GeyserConfig path resolution to NIO": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276592169
+      }
+    ],
+    "6. Add the pre-launch guard to ServerRunner": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276748337
+      }
+    ],
+    "8. Wire Phase 0 into App and thread the base directory": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276899042
+      }
+    ],
+    "9. Update steering documentation for the new runtime location": [
+      {
+        "executionId": "8af1bda1-428b-42b3-86ed-47245510d12e",
+        "chatSessionId": "sess_44ed5fca-206d-4128-9c11-5783f6d3a321",
+        "timestamp": 1789276970574
+      }
+    ]
+  }
+}
