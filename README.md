@@ -12,7 +12,7 @@ A robust, self-contained wrapper application for managing a Purpur (Minecraft Ja
 - **Native Distribution**: Can be packaged into a standalone executable (using `jpackage`) that includes its own Java runtime.
 - **Cloud Optimized**: Automatically enforces `mtu: 1200` in Geyser configuration to prevent timeout issues on cloud networks (like OCI).
 
-## Usage
+## Usage 
 
 ### Configuration
 
